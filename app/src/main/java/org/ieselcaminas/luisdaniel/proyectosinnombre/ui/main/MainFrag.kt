@@ -27,6 +27,8 @@ class MainFrag : Fragment() {
             inflater, R.layout.main_frag_layout, container, false)
 
 
+        //set LCO
+        binding.lifecycleOwner = this
 
 
 

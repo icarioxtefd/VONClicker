@@ -28,6 +28,8 @@ class LoginFrag : Fragment() {
             inflater, R.layout.login_frag_layout, container, false)
 
 
+        //set LCO
+        binding.lifecycleOwner = this
 
 
 
