@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import org.ieselcaminas.luisdaniel.proyectosinnombre.R
 import org.ieselcaminas.luisdaniel.proyectosinnombre.databinding.MainFragLayoutBinding
 
@@ -15,8 +16,6 @@ class MainFrag : Fragment() {
     companion object {
         fun newInstance() = MainFrag()
     }
-
-    private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,14 +30,16 @@ class MainFrag : Fragment() {
         binding.lifecycleOwner = this
 
 
+        //navigating to login frag
+        binding.botonJugar.setOnClickListener{
+            this.findNavController().navigate(MainFragDirections.actionMainFragToLoginFrag())
+        }
+
 
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
-    }
+    //no necessary view model since it's just a button
+
 
 }
