@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">ProyectoSinNombre</string>
+    <string name="app_name">Von Clicker</string>
+    <string name="tap">Tap!</string>
 </resources>
