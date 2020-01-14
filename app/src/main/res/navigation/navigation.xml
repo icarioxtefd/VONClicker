@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mainFrag"
-        android:name="org.ieselcaminas.luisdaniel.proyectosinnombre.ui.main.MainFrag"
+        android:name="org.vono.luisdtefd.vonclicker.ui.main.MainFrag"
         android:label="main_frag"
         tools:layout="@layout/main_frag_layout" >
         <action
@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/loginFrag"
-        android:name="org.ieselcaminas.luisdaniel.proyectosinnombre.login.LoginFrag"
+        android:name="org.vono.luisdtefd.vonclicker.login.LoginFrag"
         android:label="login_frag_layout"
         tools:layout="@layout/login_frag_layout" />
 </navigation>

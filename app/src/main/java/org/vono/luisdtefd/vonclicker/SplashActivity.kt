@@ -1,4 +1,4 @@
-package org.ieselcaminas.luisdaniel.proyectosinnombre
+package org.vono.luisdtefd.vonclicker
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -7,7 +7,7 @@ import android.os.Handler
 
 class SplashActivity : AppCompatActivity() {
 
-    val splash_time : Long = 2000 // 3000 = 1 sec
+    val splash_time : Long = 1500 // 3000 = 1 sec
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

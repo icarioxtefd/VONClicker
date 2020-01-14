@@ -1,8 +1,8 @@
-package org.ieselcaminas.luisdaniel.proyectosinnombre
+package org.vono.luisdtefd.vonclicker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import org.ieselcaminas.luisdaniel.proyectosinnombre.ui.main.MainFrag
+import org.vono.luisdtefd.vonclicker.ui.main.MainFrag
 
 class MainActivity : AppCompatActivity() {
 
