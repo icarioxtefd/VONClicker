@@ -2,23 +2,24 @@ package org.vono.luisdtefd.vonclicker.login
 
 import android.app.Activity
 import android.content.Intent
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import org.vono.luisdtefd.vonclicker.databinding.LoginFragLayoutBinding
 import org.vono.luisdtefd.vonclicker.R
 
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.game_home_frag_drawer.*
 import kotlinx.android.synthetic.main.login_frag_layout.view.*
 
 
@@ -55,6 +56,11 @@ class LoginFrag : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        //disable the drawer, since here it's not its place
+        // todo drawer_layout = findViewById sale un error porque claro, se crea antes, pero aqui ya no existe, y no se como referenciarlo, ya que no puedo usar R.id
+        // esto deshabilita el drawer
+        // drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
         //place the observer to see when user is auth or not
         observeAuthenticationState()
@@ -111,17 +117,23 @@ class LoginFrag : Fragment() {
         viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
             when (authenticationState) {
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> {
+                    /*
                     binding.buttonPlayAG.visibility = View.GONE
                     binding.buttonLogin.text = "Log out"
                     //change to log out
                     binding.buttonLogin.setOnClickListener {
                         // TODO implement logging out user in next step
                     }
+                    */
+
+                    //this.findNavController().navigate(MainFragDirections.actionMainFragToLoginFrag())
+                    this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag())
+                    // todo
 
                     // If the user is logged in,
                     // you can customize the welcome message they see by
                     // utilizing the getFactWithPersonalization() function provided
-                    binding.welcomeText.text = getFactWithPersonalization(factToDisplay)
+                    //binding.welcomeText.text = getFactWithPersonalization(factToDisplay)
 
                 }
                 else -> {

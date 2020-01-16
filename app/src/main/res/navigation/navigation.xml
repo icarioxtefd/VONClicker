@@ -14,13 +14,21 @@
             android:id="@+id/action_mainFrag_to_loginFrag"
             app:destination="@id/loginFrag"
             app:enterAnim="@anim/nav_default_pop_enter_anim"
-            app:exitAnim="@anim/nav_default_pop_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:exitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
+
     <fragment
         android:id="@+id/loginFrag"
         android:name="org.vono.luisdtefd.vonclicker.login.LoginFrag"
         android:label="login_frag_layout"
-        tools:layout="@layout/login_frag_layout" />
+        tools:layout="@layout/login_frag_layout" >
+        <action
+            android:id="@+id/action_loginFrag_to_gameHomeFrag"
+            app:destination="@id/gameHomeFrag" />
+    </fragment>
+    <fragment
+        android:id="@+id/gameHomeFrag"
+        android:name="org.vono.luisdtefd.vonclicker.gameMain.GameHomeFrag"
+        android:label="GameHomeFrag" />
+
 </navigation>
