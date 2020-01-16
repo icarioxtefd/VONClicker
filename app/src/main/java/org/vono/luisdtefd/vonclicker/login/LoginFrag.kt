@@ -46,13 +46,6 @@ class LoginFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
-        //todo preguntar:
-        //por qué no se ven los iconos en el menú
-        //se podría hacer en plan que se vea centrado y con el fondo oscuro, o sea, que no fuese un desplegable?
-        //esta cosa va en el viewmodel???
-        //cómo quitar lo de arriba "by viewmodels" y usar el onActivityCreated instead???
-        //NO VA?? Aunque t registras y demás bien, no cambia luego nada en lo del observerAuthState
-
         //login things-------------------------------------
         binding.buttonLogin.setOnClickListener{
             launchSignInFlow()
@@ -62,6 +55,10 @@ class LoginFrag : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        //place the observer to see when user is auth or not
+        observeAuthenticationState()
+
         //viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
     }
 
