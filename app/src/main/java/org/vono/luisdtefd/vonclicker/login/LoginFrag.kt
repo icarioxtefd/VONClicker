@@ -1,6 +1,8 @@
 package org.vono.luisdtefd.vonclicker.login
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -34,7 +36,9 @@ class LoginFrag : Fragment() {
 
     private val viewModel by viewModels<LoginViewModel>()
     //private lateinit var viewModel: LoginViewModel
+
     private lateinit var binding: LoginFragLayoutBinding
+    private lateinit var alertDialog: AlertDialog
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,10 +51,7 @@ class LoginFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
-        //login things-------------------------------------
-        binding.buttonLogin.setOnClickListener{
-            launchSignInFlow()
-        }
+
         return binding.root
     }
 
@@ -61,6 +62,24 @@ class LoginFrag : Fragment() {
         // todo drawer_layout = findViewById sale un error porque claro, se crea antes, pero aqui ya no existe, y no se como referenciarlo, ya que no puedo usar R.id
         // esto deshabilita el drawer
         // drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+
+        //create alert dialog so we don't need to create it when user clicks. Whether they do it or not, we'll dispose of it anyways with the transition-------------
+        alertDialog = activity.let {
+            val builder = AlertDialog.Builder(it)
+            builder.apply {
+                setPositiveButton("Yes"){ dialog, id ->
+                    goToGameHome()
+                }
+                setNegativeButton("No"){ dialog, id ->
+                    //do nothing
+                }
+            }
+            // Set other dialog properties
+
+            // Create the AlertDialog
+            builder.create()
+        }
+        //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
         //place the observer to see when user is auth or not
         observeAuthenticationState()
@@ -106,70 +125,36 @@ class LoginFrag : Fragment() {
 
     /**
      * Observes the authentication state and changes the UI accordingly.
-     * If there is a logged in user: (1) show a logout button and (2) display their name.
-     * If there is no logged in user: show a login button
+     * If there is a logged in user, goes to the game frag
+     * If there is no logged in user, shows two l
      */
     private fun observeAuthenticationState() {
-        val factToDisplay = viewModel.getFactToDisplay(requireContext())
-
         //  Use the authenticationState variable from LoginViewModel to update the UI
         //  accordingly.
         viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
             when (authenticationState) {
-                LoginViewModel.AuthenticationState.AUTHENTICATED -> {
-                    /*
-                    binding.buttonPlayAG.visibility = View.GONE
-                    binding.buttonLogin.text = "Log out"
-                    //change to log out
-                    binding.buttonLogin.setOnClickListener {
-                        // TODO implement logging out user in next step
-                    }
-                    */
-
-                    //this.findNavController().navigate(MainFragDirections.actionMainFragToLoginFrag())
-                    this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag())
-                    // todo
-
-                    // If the user is logged in,
-                    // you can customize the welcome message they see by
-                    // utilizing the getFactWithPersonalization() function provided
-                    //binding.welcomeText.text = getFactWithPersonalization(factToDisplay)
-
+                LoginViewModel.AuthenticationState.AUTHENTICATED -> { //when user is logged
+                    goToGameHome()
                 }
-                else -> {
-                    // if there is no logged-in user,
-                    // auth_button should display Login and
-                    // launch the sign in screen when clicked.
-                    binding.buttonLogin.text = "Log in"
-                    binding.buttonLogin.setOnClickListener { launchSignInFlow() }
-                    binding.welcomeText.text = factToDisplay
+                else -> { //when user is NOT logged
+                    binding.buttonLogin.setOnClickListener { launchSignInFlow() } // go with login
+
+                    //go without login
+                    binding.buttonPlayAG.setOnClickListener {
+                        alertDialog.show()
+                    }
+
                 }
             }
         })
-
-
-        //   If there is a logged-in user, authButton should display Logout. If the
-        //   user is logged in, you can customize the welcome message by utilizing
-        //   getFactWithPersonalition(). I
-
-
-
-        //  If there is no logged in user, authButton should display Login and launch the sign
-        //  in screen when clicked. There should also be no personalization of the message
-        //  displayed.
-
-
     }
 
-
-    private fun getFactWithPersonalization(fact: String): String {
-        return String.format(
-            resources.getString(
-                R.string.welcome_message_authed,
-                FirebaseAuth.getInstance().currentUser?.displayName,
-                Character.toLowerCase(fact[0]) + fact.substring(1)
-            )
-        )
+    private fun goToGameHome() { // silly fun just for not having all this line all over the page
+        this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag())
     }
+
+    /* fun code to get user's name
+        FirebaseAuth.getInstance().currentUser?.displayName
+    */
 
 }

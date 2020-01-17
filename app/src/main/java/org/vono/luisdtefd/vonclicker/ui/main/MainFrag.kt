@@ -7,14 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
+import kotlinx.android.synthetic.main.main_frag_layout.*
 import org.vono.luisdtefd.vonclicker.databinding.MainFragLayoutBinding
 import org.vono.luisdtefd.vonclicker.R
+import tyrantgit.explosionfield.ExplosionField
 
 class MainFrag : Fragment() {
 
     companion object {
         fun newInstance() = MainFrag()
     }
+
+    lateinit var explosionField: ExplosionField
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,8 +31,12 @@ class MainFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
+        //silly animation
+        explosionField = ExplosionField.attach2Window(activity)
+
         //navigating to login frag
         binding.botonJugar.setOnClickListener{
+            explosionField.explode(botonJugar)
             this.findNavController().navigate(MainFragDirections.actionMainFragToLoginFrag())
         }
 

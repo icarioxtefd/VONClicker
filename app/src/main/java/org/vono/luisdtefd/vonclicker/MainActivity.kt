@@ -2,6 +2,7 @@ package org.vono.luisdtefd.vonclicker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import org.vono.luisdtefd.vonclicker.ui.main.MainFrag
 
@@ -19,6 +20,12 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
 
 
+    }
+
+    //silly fun in order to not make the user go back, since I don't want that lolol
+    override fun onBackPressed() {
+        //super.onBackPressed() nu-oh I'm not letting u go back
+        Toast.makeText(applicationContext, "Nu-oh", Toast.LENGTH_LONG).show()
     }
 
 }
