@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.nightonke.boommenu.BoomButtons.OnBMClickListener
@@ -77,7 +78,7 @@ class GameHomeFrag : Fragment() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        //logs out
+                        //logs out; todo if playing as guest, it should just say exit
                         AuthUI.getInstance().signOut(requireContext())
                         //todo saves
 
@@ -109,7 +110,7 @@ class GameHomeFrag : Fragment() {
         viewModel = ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
 
         //enable the drawer
-        //drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+        activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
 
     }
 

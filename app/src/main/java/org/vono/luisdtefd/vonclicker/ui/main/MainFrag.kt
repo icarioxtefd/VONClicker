@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.main_frag_layout.*
 import org.vono.luisdtefd.vonclicker.databinding.MainFragLayoutBinding
@@ -39,6 +40,9 @@ class MainFrag : Fragment() {
             explosionField.explode(botonJugar)
             this.findNavController().navigate(MainFragDirections.actionMainFragToLoginFrag())
         }
+
+        //get the activity's things so the drawer is there
+        activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
         return binding.root
     }

@@ -2,7 +2,6 @@ package org.vono.luisdtefd.vonclicker.login
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -21,8 +20,6 @@ import org.vono.luisdtefd.vonclicker.R
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.game_home_frag_drawer.*
-import kotlinx.android.synthetic.main.login_frag_layout.view.*
 
 
 class LoginFrag : Fragment() {
@@ -59,9 +56,9 @@ class LoginFrag : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         //disable the drawer, since here it's not its place
-        // todo drawer_layout = findViewById sale un error porque claro, se crea antes, pero aqui ya no existe, y no se como referenciarlo, ya que no puedo usar R.id
-        // esto deshabilita el drawer
-        // drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+        activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+
+
 
         //create alert dialog so we don't need to create it when user clicks. Whether they do it or not, we'll dispose of it anyways with the transition-------------
         alertDialog = activity.let {
