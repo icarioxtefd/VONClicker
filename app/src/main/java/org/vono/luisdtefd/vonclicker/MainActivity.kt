@@ -30,6 +30,3 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
-
-// todo preguntarle a victor como mantener el observer del login, para poder desloggear y demas, en el game fragment, o en cualquiera que no sea en el que ya lo tengo hecho
-// todo porque quiero hacer el log out en otro fragment

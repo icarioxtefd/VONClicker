@@ -60,7 +60,7 @@ class LoginFrag : Fragment() {
 
 
 
-        //create alert dialog so we don't need to create it when user clicks. Whether they do it or not, we'll dispose of it anyways with the transition-------------
+        //todo create alert dialog so we don't need to create it when user clicks. Whether they do it or not, we'll dispose of it anyways with the transition-------------
         alertDialog = activity.let {
             val builder = AlertDialog.Builder(it)
             builder.apply {
@@ -130,10 +130,14 @@ class LoginFrag : Fragment() {
         //  accordingly.
         viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
             when (authenticationState) {
+
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> { //when user is logged
                     goToGameHome()
+
+
                 }
-                else -> { //when user is NOT logged
+
+                else -> { //when user is NOT logged, since I didn't implement another enum state
                     binding.buttonLogin.setOnClickListener { launchSignInFlow() } // go with login
 
                     //go without login
@@ -142,6 +146,8 @@ class LoginFrag : Fragment() {
                     }
 
                 }
+
+
             }
         })
     }
