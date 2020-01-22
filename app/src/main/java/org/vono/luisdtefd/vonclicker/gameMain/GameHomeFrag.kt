@@ -1,6 +1,5 @@
 package org.vono.luisdtefd.vonclicker.gameMain
 
-import android.graphics.Rect
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -30,7 +29,6 @@ class GameHomeFrag : Fragment() {
 
     private lateinit var viewModel: GameHomeViewModel
     private lateinit var binding: GameHomeFragmentBinding
-    private lateinit var logOutExitString: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,28 +53,21 @@ class GameHomeFrag : Fragment() {
         //enable the drawer
         activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
 
+        //add the buttons
+        addBoomButtonsMenu()
+
         //check whether you got here as a guest or as an alr registered user
         if(FirebaseAuth.getInstance().currentUser != null){
-            // todo if there's a user, gotta pull all their saved data
-
-
-
-
-
-            // also do some changes
-            logOutExitString = "Log out"
-            addBoomButtonsMenu()
-
-
-
+            // todo if there's a user, gotta pull all their saved data, and make few changes
 
 
 
         }
         else{
-            //user is a guest, so don't do anything, just create a new game with few changes
-            logOutExitString = "Exit"
-            addBoomButtonsMenu()
+            //todo user is a guest, so don't do anything, just create a new game with few changes
+
+
+
         }
 
     }
@@ -114,7 +105,7 @@ class GameHomeFrag : Fragment() {
                 }
 
                 3 -> {
-                    bmbButton = TextInsideCircleButton.Builder().normalImageRes(R.drawable.key).normalText(logOutExitString)
+                    bmbButton = TextInsideCircleButton.Builder().normalImageRes(R.drawable.key).normalText(viewModel.logOutExitString.value)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
                             Toast.makeText(
