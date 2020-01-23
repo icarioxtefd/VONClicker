@@ -42,6 +42,10 @@ class GameHomeFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
+        //set the listener to the image
+        binding.imageToTap.setOnClickListener {
+            Toast.makeText(context, "Tap", Toast.LENGTH_SHORT).show()
+        }
 
         return binding.root
     }

@@ -20,6 +20,8 @@ import org.vono.luisdtefd.vonclicker.R
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.*
+import java.util.HashMap
 
 
 class LoginFrag : Fragment() {
@@ -32,10 +34,16 @@ class LoginFrag : Fragment() {
     }
 
     private val viewModel by viewModels<LoginViewModel>()
+    var listenerExistingUser: ListenerRegistration? = null
     //private lateinit var viewModel: LoginViewModel
 
     private lateinit var binding: LoginFragLayoutBinding
     private lateinit var alertDialog: AlertDialog
+
+    //ref the CF database and the accounts doc--------
+    private val db = FirebaseFirestore.getInstance()
+    var docRef = db.collection("accounts")
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +59,8 @@ class LoginFrag : Fragment() {
 
         return binding.root
     }
+
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -109,7 +119,7 @@ class LoginFrag : Fragment() {
                 Log.i(
                     TAG,
                     "Successfully signed in user " +
-                            "${FirebaseAuth.getInstance().currentUser?.displayName}!"
+                            "${getCurrentUser()}!"
                 )
             } else {
                 // Sign in failed. If response is null the user canceled the sign-in flow using
@@ -132,9 +142,12 @@ class LoginFrag : Fragment() {
             when (authenticationState) {
 
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> { //when user is logged
+
+                    //if it's their first time logging in, create their credentials in firebase
+                    createUserInCFDatabase() //this also checks whether they alr have an acc or not
+
+                    //finally, go to the game screen
                     goToGameHome()
-
-
                 }
 
                 else -> { //when user is NOT logged, since I didn't implement another enum state
@@ -152,12 +165,37 @@ class LoginFrag : Fragment() {
         })
     }
 
+    private fun createUserInCFDatabase() {
+        db.collection("accounts").document(getCurrentUser()).get()
+            .addOnCompleteListener { task ->
+                // todo no lo hace, siempre encuentra cuando no deberia
+                Log.i(TAG,
+                    "Trying to create user " + "${getCurrentUser()}!")
+
+                if (task.isSuccessful) { // meaning the user has alr got an acc
+                    Log.i(TAG,
+                        "Alr existing user " + "${getCurrentUser()}!")
+                    //so don't do anything
+
+                } else { // meaning user doesn't have one
+                    Log.i(TAG,
+                        "Can't find " + "${getCurrentUser()}!")
+                    //so make their acc
+                    val data = HashMap<String, Any>()
+                    data["id-username"] = getCurrentUser()
+
+                    //add the new doc to the collection
+                    db.collection("accounts").document(getCurrentUser())
+                        .set(data)
+                }
+            }
+    }
+
+
     private fun goToGameHome() { // silly fun just for not having all this line all over the page
         this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag())
     }
 
-    /* fun code to get user's name
-        FirebaseAuth.getInstance().currentUser?.displayName
-    */
+    private fun getCurrentUser() = FirebaseAuth.getInstance().currentUser?.displayName.toString()
 
 }

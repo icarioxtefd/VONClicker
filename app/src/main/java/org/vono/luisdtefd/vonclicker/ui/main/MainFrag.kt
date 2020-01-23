@@ -43,7 +43,7 @@ class MainFrag : Fragment() {
 
         //get the activity's things so the drawer is there
         activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
+        
         return binding.root
     }
 
