@@ -21,6 +21,7 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
+import com.google.firebase.firestore.local.LocalViewChanges
 import java.util.HashMap
 
 
@@ -119,7 +120,7 @@ class LoginFrag : Fragment() {
                 Log.i(
                     TAG,
                     "Successfully signed in user " +
-                            "${getCurrentUser()}!"
+                            "${getCurrentUsernameString()}!"
                 )
             } else {
                 // Sign in failed. If response is null the user canceled the sign-in flow using
@@ -166,29 +167,34 @@ class LoginFrag : Fragment() {
     }
 
     private fun createUserInCFDatabase() {
-        db.collection("accounts").document(getCurrentUser()).get()
-            .addOnCompleteListener { task ->
-                // todo no lo hace, siempre encuentra cuando no deberia
+        db.collection("accounts").whereEqualTo("id", getUserUid()).
+            addSnapshotListener{ snapshots, e ->
+
                 Log.i(TAG,
-                    "Trying to create user " + "${getCurrentUser()}!")
+                    "Trying to create user " + "${getCurrentUsernameString()} with uid: " + getUserUid()
+                )
 
-                if (task.isSuccessful) { // meaning the user has alr got an acc
-                    Log.i(TAG,
-                        "Alr existing user " + "${getCurrentUser()}!")
-                    //so don't do anything
+                if(snapshots!!.isEmpty){ //if there's no acc created yet
+                    //make it
 
-                } else { // meaning user doesn't have one
                     Log.i(TAG,
-                        "Can't find " + "${getCurrentUser()}!")
-                    //so make their acc
+                        "User doesn't exist yet, creating user " + "${getCurrentUsernameString()} with uid: " + getUserUid()
+                    )
+
                     val data = HashMap<String, Any>()
-                    data["id-username"] = getCurrentUser()
+                    data["username"] = getCurrentUsernameString()
+                    data["id"] = getUserUid()
 
                     //add the new doc to the collection
-                    db.collection("accounts").document(getCurrentUser())
-                        .set(data)
+                    db.collection("accounts").document(getCurrentUsernameString()).set(data)
                 }
-            }
+                else{ //meaning it alr exists
+                    //so don't do anything
+                    Log.i(TAG,
+                        "User "+ "${getCurrentUsernameString()} with uid: " + getUserUid() + " already exists."
+                    )
+                }
+        }
     }
 
 
@@ -196,6 +202,8 @@ class LoginFrag : Fragment() {
         this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag())
     }
 
-    private fun getCurrentUser() = FirebaseAuth.getInstance().currentUser?.displayName.toString()
+    private fun getCurrentUsernameString() = FirebaseAuth.getInstance().currentUser?.displayName.toString()
+
+    private fun getUserUid() = FirebaseAuth.getInstance().currentUser!!.uid
 
 }
