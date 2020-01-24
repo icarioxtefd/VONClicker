@@ -145,4 +145,6 @@ class GameHomeFrag : Fragment() {
         //---------------------------------------------------------------------------------------------------------------------------------
     }
 
+    //todo funcion de guardar en CF BBDD con el boton de guardar; se guardara basicamente todo
+
 }

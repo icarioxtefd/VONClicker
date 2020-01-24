@@ -43,7 +43,7 @@ class LoginFrag : Fragment() {
 
     //ref the CF database and the accounts doc--------
     private val db = FirebaseFirestore.getInstance()
-    var docRef = db.collection("accounts")
+    lateinit var docRef: CollectionReference
 
 
     override fun onCreateView(
@@ -187,6 +187,15 @@ class LoginFrag : Fragment() {
 
                     //add the new doc to the collection
                     db.collection("accounts").document(getCurrentUsernameString()).set(data)
+
+                    //also, make the played_data collection with its docs
+                    var userPlayedData = HashMap<String, Any>()
+                    userPlayedData["timesTapped"] = 0
+                    userPlayedData["currency"] = 0
+                    //and add it
+                    db.collection("accounts").document(getCurrentUsernameString()).collection("played_data").document("generals").set(userPlayedData)
+
+                    //we should also add the upgrades, but, ftm, TODO upgrades as another document inside played_data docs
                 }
                 else{ //meaning it alr exists
                     //so don't do anything
@@ -202,8 +211,10 @@ class LoginFrag : Fragment() {
         this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag())
     }
 
-    private fun getCurrentUsernameString() = FirebaseAuth.getInstance().currentUser?.displayName.toString()
-
-    private fun getUserUid() = FirebaseAuth.getInstance().currentUser!!.uid
-
 }
+
+//xtra functions that I made myself in order to shorten calls
+
+fun getCurrentUsernameString() = FirebaseAuth.getInstance().currentUser?.displayName.toString()
+
+fun getUserUid() = FirebaseAuth.getInstance().currentUser!!.uid
