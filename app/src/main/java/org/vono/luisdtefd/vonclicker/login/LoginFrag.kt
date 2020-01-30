@@ -70,19 +70,19 @@ class LoginFrag : Fragment() {
         activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
 
-
-        //todo create alert dialog so we don't need to create it when user clicks. Whether they do it or not, we'll dispose of it anyways with the transition-------------
         alertDialog = activity.let {
             val builder = AlertDialog.Builder(it)
             builder.apply {
-                setPositiveButton("Yes"){ dialog, id ->
+                setPositiveButton("Ok boomer."){ dialog, id ->
                     goToGameHome()
                 }
-                setNegativeButton("No"){ dialog, id ->
+                setNegativeButton("Go bacc then"){ dialog, id ->
                     //do nothing
                 }
             }
-            // Set other dialog properties
+
+            builder.setTitle("Are you sure?")
+            builder.setMessage("Playing as a guest won't allow you to save any of your progress, so if you close the app, you will lose everything.")
 
             // Create the AlertDialog
             builder.create()

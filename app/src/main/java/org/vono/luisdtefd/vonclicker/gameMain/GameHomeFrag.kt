@@ -1,5 +1,6 @@
 package org.vono.luisdtefd.vonclicker.gameMain
 
+import android.graphics.Rect
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -80,7 +81,10 @@ class GameHomeFrag : Fragment() {
         //boom buttons, aka fab but prettier-----------------------------------------------------------------------------------------------
         //first one + initialization
         var bmbButton =
-            TextInsideCircleButton.Builder().normalImageRes(R.drawable.save).normalText("Save")
+            TextInsideCircleButton.Builder()
+                .normalImageRes(R.drawable.save).imagePadding(Rect(20, 20, 20, 20))
+                .normalText("Save").textPadding(Rect(0, 8, 0, 0)).textSize(11)
+                .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                 .listener { index ->
                     // When the boom-button corresponding this builder is clicked.
                     Toast.makeText(
@@ -88,12 +92,23 @@ class GameHomeFrag : Fragment() {
                         "Clicked $index",
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    //todo make the saving code
+                    if(viewModel.logOutExitString.value == "Log Out"){ //meaning the user's logged in
+
+                    }
+                    else{ //they're playing as a guest
+                        //todo make a toast saying you can't save since you're not logged in, but
+                    }
                 }
 
         for (i in 0 until binding.bmb.piecePlaceEnum.pieceNumber()) {
             when (i) {
                 1 -> {
-                    bmbButton = TextInsideCircleButton.Builder().normalImageRes(R.drawable.info).normalText("Info")
+                    bmbButton = TextInsideCircleButton.Builder()
+                        .normalImageRes(R.drawable.info).imagePadding(Rect(20, 20, 20, 20))
+                        .normalText("Info").textPadding(Rect(0, 8, 0, 0)).textSize(11)
+                        .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
                             Toast.makeText(
@@ -105,11 +120,16 @@ class GameHomeFrag : Fragment() {
                 }
 
                 2 -> {
-                    bmbButton = TextInsideCircleButton.Builder().normalImageRes(R.drawable.cancel)
+                    bmbButton = TextInsideCircleButton.Builder()
+                        .normalImageRes(R.drawable.cancel).imagePadding(Rect(30, 35, 30, 30))
+                        .normalColor(android.R.color.black)
                 }
 
                 3 -> {
-                    bmbButton = TextInsideCircleButton.Builder().normalImageRes(R.drawable.key).normalText(viewModel.logOutExitString.value)
+                    bmbButton = TextInsideCircleButton.Builder()
+                        .normalImageRes(R.drawable.key).imagePadding(Rect(20, 20, 20, 20))
+                        .normalText(viewModel.logOutExitString.value).textPadding(Rect(0, 8, 0, 0)).textSize(11)
+                        .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
                             Toast.makeText(
@@ -118,9 +138,10 @@ class GameHomeFrag : Fragment() {
                                 Toast.LENGTH_SHORT
                             ).show()
 
-                            //logs out; todo if playing as guest, it should just say exit
+                            //logs out;
                             AuthUI.getInstance().signOut(requireContext())
-                            //todo saves
+                            //todo saves again, just in case u didn't save, but only if you're logged, use the string, not the user
+                            //todo the idea is making a function that checks AND saves, so I could use it in both places, here and in the save button
 
                             //and then gets to the main frag again
                             this.findNavController()
@@ -129,7 +150,10 @@ class GameHomeFrag : Fragment() {
                 }
 
                 4 -> {
-                    bmbButton = TextInsideCircleButton.Builder().normalImageRes(R.drawable.settings).normalText("Config")
+                    bmbButton = TextInsideCircleButton.Builder()
+                        .normalImageRes(R.drawable.settings).imagePadding(Rect(20, 20, 20, 20))
+                        .normalText("Config").textPadding(Rect(0, 8, 0, 0)).textSize(11)
+                        .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
                             Toast.makeText(
