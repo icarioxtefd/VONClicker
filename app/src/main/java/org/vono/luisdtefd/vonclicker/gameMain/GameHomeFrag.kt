@@ -13,7 +13,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
-import com.nightonke.boommenu.BoomButtons.OnBMClickListener
 
 import org.vono.luisdtefd.vonclicker.databinding.GameHomeFragmentBinding
 import org.vono.luisdtefd.vonclicker.R
@@ -85,21 +84,18 @@ class GameHomeFrag : Fragment() {
                 .normalImageRes(R.drawable.save).imagePadding(Rect(20, 20, 20, 20))
                 .normalText("Save").textPadding(Rect(0, 8, 0, 0)).textSize(11)
                 .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
+                .unable(! isUserLogged()).unableImageRes(R.drawable.save).unableColor(android.R.color.black) //unable the button if there's no logged user
                 .listener { index ->
                     // When the boom-button corresponding this builder is clicked.
+
                     Toast.makeText(
                         context,
                         "Clicked $index",
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    //todo make the saving code
-                    if(viewModel.logOutExitString.value == "Log Out"){ //meaning the user's logged in
+                    // todo make the saving code
 
-                    }
-                    else{ //they're playing as a guest
-                        //todo make a toast saying you can't save since you're not logged in, but
-                    }
                 }
 
         for (i in 0 until binding.bmb.piecePlaceEnum.pieceNumber()) {
@@ -171,4 +167,12 @@ class GameHomeFrag : Fragment() {
 
     //todo funcion de guardar en CF BBDD con el boton de guardar; se guardara basicamente todo
 
+
+}
+
+//know whether there's a logged user or not
+
+
+fun isUserLogged(): Boolean {
+    return FirebaseAuth.getInstance().currentUser != null
 }

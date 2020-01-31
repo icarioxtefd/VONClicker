@@ -16,7 +16,7 @@ class GameHomeViewModel : ViewModel() {
     //constructor
     init {
         //changes whether the user is logged or not
-        i_logOutExitString.value = if (FirebaseAuth.getInstance().currentUser != null) "Log Out" else "Exit"
+        i_logOutExitString.value = if (isUserLogged()) "Log Out" else "Exit"
 
         //todo get all their values from the database acc's played_data things (y luego ponerlas en el frag para su visualizacion)
 

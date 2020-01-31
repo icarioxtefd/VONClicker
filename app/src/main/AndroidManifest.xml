@@ -10,10 +10,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity
-            android:name=".navDrawAct"
-            android:label="@string/title_activity_nav_draw"
-            android:theme="@style/AppTheme.NoActionBar.NoActionBar"></activity>
-        <activity
             android:name=".SplashActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
@@ -22,12 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+        <activity android:name=".MainActivity">
         </activity>
     </application>
 

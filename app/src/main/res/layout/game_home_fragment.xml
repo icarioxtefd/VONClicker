@@ -30,6 +30,8 @@
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:bmb_normalColor="@color/colorPrimary"
+            app:bmb_highlightedColor="@color/colorPrimaryDark"
             app:bmb_buttonEnum="textInsideCircle"
             app:bmb_piecePlaceEnum="piecePlace_dot_5_3"
             app:bmb_buttonPlaceEnum="buttonPlace_sc_5_4"/>

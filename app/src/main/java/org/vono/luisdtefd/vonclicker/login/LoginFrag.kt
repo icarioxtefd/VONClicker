@@ -170,16 +170,12 @@ class LoginFrag : Fragment() {
         db.collection("accounts").whereEqualTo("id", getUserUid()).
             addSnapshotListener{ snapshots, e ->
 
-                Log.i(TAG,
-                    "Trying to create user " + "${getCurrentUsernameString()} with uid: " + getUserUid()
-                )
+                Log.i(TAG, "Trying to create user " + "${getCurrentUsernameString()} with uid: " + getUserUid() )
 
                 if(snapshots!!.isEmpty){ //if there's no acc created yet
                     //make it
 
-                    Log.i(TAG,
-                        "User doesn't exist yet, creating user " + "${getCurrentUsernameString()} with uid: " + getUserUid()
-                    )
+                    Log.i(TAG, "User doesn't exist yet, creating user " + "${getCurrentUsernameString()} with uid: " + getUserUid() )
 
                     val data = HashMap<String, Any>()
                     data["username"] = getCurrentUsernameString()
@@ -192,6 +188,7 @@ class LoginFrag : Fragment() {
                     var userPlayedData = HashMap<String, Any>()
                     userPlayedData["timesTapped"] = 0
                     userPlayedData["currency"] = 0
+
                     //and add it
                     db.collection("accounts").document(getCurrentUsernameString()).collection("played_data").document("generals").set(userPlayedData)
 
@@ -199,9 +196,7 @@ class LoginFrag : Fragment() {
                 }
                 else{ //meaning it alr exists
                     //so don't do anything
-                    Log.i(TAG,
-                        "User "+ "${getCurrentUsernameString()} with uid: " + getUserUid() + " already exists."
-                    )
+                    Log.i(TAG, "User "+ "${getCurrentUsernameString()} with uid: " + getUserUid() + " already exists." )
                 }
         }
     }
