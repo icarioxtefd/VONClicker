@@ -1,5 +1,6 @@
 package org.vono.luisdtefd.vonclicker
 
+import android.content.pm.ActivityInfo
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -15,6 +16,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.game_home_frag_drawer)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT // no landscape
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.mainFrag, MainFrag.newInstance())

@@ -3,6 +3,7 @@ package org.vono.luisdtefd.vonclicker.gameMain
 import android.graphics.Rect
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,15 +11,21 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
 
 import org.vono.luisdtefd.vonclicker.databinding.GameHomeFragmentBinding
 import org.vono.luisdtefd.vonclicker.R
 import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton
-
-
+import org.vono.luisdtefd.vonclicker.login.LoginFrag
+import org.vono.luisdtefd.vonclicker.login.getCurrentUsernameString
+import org.vono.luisdtefd.vonclicker.login.getUserUid
+import java.util.HashMap
 
 
 class GameHomeFrag : Fragment() {
@@ -29,6 +36,10 @@ class GameHomeFrag : Fragment() {
 
     private lateinit var viewModel: GameHomeViewModel
     private lateinit var binding: GameHomeFragmentBinding
+
+    //ref the CF database and the accounts doc--------
+    private val db = FirebaseFirestore.getInstance()
+    lateinit var docRef: DocumentReference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,36 +53,43 @@ class GameHomeFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
-        //set the listener to the image
-        binding.imageToTap.setOnClickListener {
-            Toast.makeText(context, "Tap", Toast.LENGTH_SHORT).show()
-        }
+
 
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
+    override fun onActivityCreated(savedInstanceState: Bundle?) { //everything in the code using the viewModel should go here
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
 
         //enable the drawer
         activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
 
+        //set the listener to the image
+        binding.imageToTap.setOnClickListener {
+            // Toast.makeText(context, "Tap", Toast.LENGTH_SHORT).show()
+            viewModel.i_timesTapped.value = viewModel.i_timesTapped.value!! + 1
+            viewModel.i_currency.value = viewModel.i_currency.value!! + 1
+            //Toast.makeText(context, "Tapped, tapped times total: " + viewModel.i_timesTapped.value, Toast.LENGTH_SHORT).show()
+        }
+
+        //observer for the viewText
+        viewModel.currency.observe(this, Observer {
+            it?.let {
+                binding.textViewCurrency.text = "Currency: " + viewModel.currency.value.toString()
+            }
+        })
+
         //add the buttons
         addBoomButtonsMenu()
 
         //check whether you got here as a guest or as an alr registered user
-        if(FirebaseAuth.getInstance().currentUser != null){
-            // todo if there's a user, gotta pull all their saved data, and make few changes
-
-
-
+        if(FirebaseAuth.getInstance().currentUser != null){ //if there's a user, gotta pull all their saved data, and make few changes
+            // todo modify the loading code in order to load everything (not only currency and tapped times)
+            loadDataFromFB()
         }
         else{
-            //todo user is a guest, so don't do anything, just create a new game with few changes
-
-
-
+            //user is a guest, so don't do anything, just create a new game without loading anything
         }
 
     }
@@ -88,13 +106,11 @@ class GameHomeFrag : Fragment() {
                 .listener { index ->
                     // When the boom-button corresponding this builder is clicked.
 
-                    Toast.makeText(
-                        context,
-                        "Clicked $index",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    //Toast.makeText(context,"Clicked $index",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,"Saving...",Toast.LENGTH_SHORT).show()
 
-                    // todo make the saving code
+                    // todo modify the saving code in order to save everything (not only currency and tapped times)
+                    saveDataToFB()
 
                 }
 
@@ -165,14 +181,49 @@ class GameHomeFrag : Fragment() {
         //---------------------------------------------------------------------------------------------------------------------------------
     }
 
-    //todo funcion de guardar en CF BBDD con el boton de guardar; se guardara basicamente todo
+    private fun saveDataToFB() {
+        db.collection("accounts").whereEqualTo("id", getUserUid())
+            .addSnapshotListener { snapshots, e ->
+
+                db.collection("accounts").whereEqualTo("id", getUserUid())
+                    .addSnapshotListener { snapshots, e ->
+
+                        Log.i(
+                            "GameHomeFrag",
+                            "Trying to save data for user " + "${getCurrentUsernameString()} with uid: " + getUserUid()
+                        )
+
+                        //also, make the played_data collection with its docs
+                        var userPlayedData = HashMap<String, Any>()
+                        userPlayedData["timesTapped"] = viewModel.currency.value!!.toInt()
+                        userPlayedData["currency"] = viewModel.currency.value!!.toInt()
+
+                        //and add it
+                        db.collection("accounts").document(getCurrentUsernameString())
+                            .collection("played_data").document("generals").update(userPlayedData)
+                    }
+            }
+    }
+
+    private fun loadDataFromFB() {
+        docRef =
+            db.collection("accounts").document(getCurrentUsernameString()).collection("played_data")
+                .document("generals")
+        docRef.get().addOnSuccessListener { documentSnapshot ->
+            val currency =
+                documentSnapshot.getLong("currency") //firestore doesn't have getInt() so well, let's hope this will do
+            val timesTapped = documentSnapshot.getLong("timesTapped")
+            viewModel.i_currency.value = currency!!.toInt()
+            viewModel.i_timesTapped.value = timesTapped!!.toInt()
+        }
+    }
 
 
 }
 
-//know whether there's a logged user or not
 
 
+// know whether there's a logged user or not
 fun isUserLogged(): Boolean {
     return FirebaseAuth.getInstance().currentUser != null
 }
