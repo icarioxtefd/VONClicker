@@ -85,8 +85,8 @@ class GameHomeFrag : Fragment() {
 
         //check whether you got here as a guest or as an alr registered user
         if(FirebaseAuth.getInstance().currentUser != null){ //if there's a user, gotta pull all their saved data, and make few changes
-            // todo modify the loading code in order to load everything (not only currency and tapped times)
-            loadDataFromFB()
+            //loadDataFromFB() TODO PETA SI TU CUENTA NO EXISTIA ANTES YA, PORQUE INTENTA CARGAR COSAS QUE NO HA TENIDO TIEMPO A CREAR AUN
+            //todo idea de solucion: un elvis? que no haga la funcion si da null
         }
         else{
             //user is a guest, so don't do anything, just create a new game without loading anything
@@ -109,7 +109,6 @@ class GameHomeFrag : Fragment() {
                     //Toast.makeText(context,"Clicked $index",Toast.LENGTH_SHORT).show()
                     Toast.makeText(context,"Saving...",Toast.LENGTH_SHORT).show()
 
-                    // todo modify the saving code in order to save everything (not only currency and tapped times)
                     saveDataToFB()
 
                 }
@@ -151,9 +150,9 @@ class GameHomeFrag : Fragment() {
                             ).show()
 
                             //logs out;
+                            if(isUserLogged()){ saveDataToFB() } //save their data in case they forgot
                             AuthUI.getInstance().signOut(requireContext())
-                            //todo saves again, just in case u didn't save, but only if you're logged, use the string, not the user
-                            //todo the idea is making a function that checks AND saves, so I could use it in both places, here and in the save button
+                            //todo the idea is doing this in @onFragmentDestroyed or wherever when the app is closed
 
                             //and then gets to the main frag again
                             this.findNavController()
@@ -182,6 +181,7 @@ class GameHomeFrag : Fragment() {
     }
 
     private fun saveDataToFB() {
+        viewModel.i_timesSaved.value = viewModel.i_timesSaved.value!! + 1
         db.collection("accounts").whereEqualTo("id", getUserUid())
             .addSnapshotListener { snapshots, e ->
 
@@ -195,10 +195,15 @@ class GameHomeFrag : Fragment() {
 
                         //also, make the played_data collection with its docs
                         var userPlayedData = HashMap<String, Any>()
-                        userPlayedData["timesTapped"] = viewModel.currency.value!!.toInt()
-                        userPlayedData["currency"] = viewModel.currency.value!!.toInt()
+                        userPlayedData["timesTapped"] = viewModel.timesTapped.value!!
+                        userPlayedData["tapMultiplier"] = viewModel.tapMultiplier.value!!
+                        userPlayedData["currency"] = viewModel.currency.value!!
+                        userPlayedData["timesSaved"] = viewModel.timesSaved.value!!
 
-                        //and add it
+                        //add the root map from the viewModel
+                        userPlayedData["upgrades"] = viewModel.i_upgrades.value!!
+
+                        //and add/set it
                         db.collection("accounts").document(getCurrentUsernameString())
                             .collection("played_data").document("generals").update(userPlayedData)
                     }
@@ -210,11 +215,18 @@ class GameHomeFrag : Fragment() {
             db.collection("accounts").document(getCurrentUsernameString()).collection("played_data")
                 .document("generals")
         docRef.get().addOnSuccessListener { documentSnapshot ->
-            val currency =
-                documentSnapshot.getLong("currency") //firestore doesn't have getInt() so well, let's hope this will do
-            val timesTapped = documentSnapshot.getLong("timesTapped")
-            viewModel.i_currency.value = currency!!.toInt()
+            val timesTapped = documentSnapshot.getLong("timesTapped") //firestore doesn't have getInt() so well, let's hope this will do
+            val tapMultiplier = documentSnapshot.getLong("tapMultiplier")
+            val currency = documentSnapshot.getLong("currency")
+            val timesSaved = documentSnapshot.getLong("timesSaved")
+            val upgrades = documentSnapshot.get("upgrades") as HashMap<String, HashMap<String, Any>>
+
             viewModel.i_timesTapped.value = timesTapped!!.toInt()
+            viewModel.i_tapMultiplier.value = tapMultiplier!!.toInt()
+            viewModel.i_currency.value = currency!!.toInt()
+            viewModel.i_timesSaved.value = timesSaved!!.toInt()
+            viewModel.i_upgrades.value = upgrades
+
         }
     }
 

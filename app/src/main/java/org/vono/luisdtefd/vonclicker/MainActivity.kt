@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.itemIconTintList = null //for keeping the original colors of the icons
-
+        navigationView.setBackgroundColor(resources.getColor(R.color.usuallygrey)) //change its background color
     }
 
     //silly fun in order to not make the user go back, since I don't want that lolol

@@ -184,15 +184,39 @@ class LoginFrag : Fragment() {
                     //add the new doc to the collection
                     db.collection("accounts").document(getCurrentUsernameString()).set(data)
 
-                    //also, make the played_data collection with its docs
+                    //also, make the played_data collection with its docs---
+
+                    //inside generals, add the things to the userPlayedData pack
                     var userPlayedData = HashMap<String, Any>()
+
                     userPlayedData["timesTapped"] = 0
+                    userPlayedData["timesSaved"] = 0
                     userPlayedData["currency"] = 0
+                    userPlayedData["tapMultiplier"] = 1
 
-                    //and add it
+                    //also the multimap which is the upgrades thing
+                    var upgradesMap = HashMap<String, HashMap<String, Any>>()
+
+                    //every upgrade as a map
+                    var electrifyMap = HashMap<String, Any>()
+                    electrifyMap["bought"] = false
+                    electrifyMap["level"] = 0
+
+                    var directCurrentMap = HashMap<String, Any>()
+                    directCurrentMap["bought"] = false
+                    directCurrentMap["level"] = 0
+
+                    //adding every map to the root map
+                    upgradesMap["electrify"] = electrifyMap
+                    upgradesMap["directCurrent"] = directCurrentMap
+
+                    //add the root map
+                    userPlayedData["upgrades"] = upgradesMap
+
+
+
+                    //and finally add it
                     db.collection("accounts").document(getCurrentUsernameString()).collection("played_data").document("generals").set(userPlayedData)
-
-                    //we should also add the upgrades, but, ftm, TODO upgrades as another document inside played_data docs
                 }
                 else{ //meaning it alr exists
                     //so don't do anything
