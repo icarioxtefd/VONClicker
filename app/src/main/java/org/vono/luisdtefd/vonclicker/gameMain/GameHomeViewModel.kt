@@ -1,5 +1,6 @@
 package org.vono.luisdtefd.vonclicker.gameMain
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -36,6 +37,7 @@ class GameHomeViewModel : ViewModel() {
         i_currency.value = 0
         initializeUpgradesMap() //i_upgrades.value
 
+        Log.i("GameHomeViewModel", "Init")
 
     }
 
@@ -62,4 +64,8 @@ class GameHomeViewModel : ViewModel() {
         i_upgrades.value = upgradesMap
     }
 
+    override fun onCleared() { //whenever the viewModel gets destroyed
+        super.onCleared()
+        Log.i("GameHomeViewModel", "Destroyed")
+    }
 }

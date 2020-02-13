@@ -32,8 +32,11 @@
         android:label="GameHomeFrag" >
         <action
             android:id="@+id/action_gameHomeFrag_to_mainFrag"
-            app:destination="@id/mainFrag"
-            app:enterAnim="@anim/fade_out_fade_in" />
+            app:destination="@+id/mainFrag"
+            app:enterAnim="@anim/fade_out_fade_in"
+            app:popEnterAnim="@anim/fade_out_fade_in"
+            app:popUpTo="@+id/mainFrag"
+            app:popUpToInclusive="true" />
     </fragment>
 
 </navigation>

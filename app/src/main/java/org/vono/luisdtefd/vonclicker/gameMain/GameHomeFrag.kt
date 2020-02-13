@@ -3,17 +3,18 @@ package org.vono.luisdtefd.vonclicker.gameMain
 import android.graphics.Rect
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
@@ -22,9 +23,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import org.vono.luisdtefd.vonclicker.databinding.GameHomeFragmentBinding
 import org.vono.luisdtefd.vonclicker.R
 import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton
+import com.rbddevs.splashy.Splashy
+import kotlinx.android.synthetic.main.game_home_frag_drawer.*
 import org.vono.luisdtefd.vonclicker.login.LoginFrag
 import org.vono.luisdtefd.vonclicker.login.getCurrentUsernameString
 import org.vono.luisdtefd.vonclicker.login.getUserUid
+import java.lang.Exception
 import java.util.HashMap
 
 
@@ -46,6 +50,12 @@ class GameHomeFrag : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
+        //call splashy (library splash screen)
+        setSplashy()
+
+        //enable the drawer
+        activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+
         //ref the binding
         binding = DataBindingUtil.inflate(inflater, R.layout.game_home_fragment, container, false)
 
@@ -54,22 +64,29 @@ class GameHomeFrag : Fragment() {
         binding.lifecycleOwner = this
 
 
-
-        return binding.root
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) { //everything in the code using the viewModel should go here
-        super.onActivityCreated(savedInstanceState)
+        //set the viewModel and everything
         viewModel = ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
 
-        //enable the drawer
-        activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+
+        Handler().postDelayed({  //make the loading wait 2 secs, so it has enough time to init the observers, save to FB, and load from FB if necessary. THIS IS A MUST, IT WILL CRASH OTHERWISE
+
+            //check whether you got here as a guest or as an alr registered user.
+            if(FirebaseAuth.getInstance().currentUser != null){ //if there's a user, gotta pull all their saved data, and make few changes
+                Log.i("GameHomeFrag", "Trying to fetch data from FBCF...")
+                loadDataFromFB()
+            }
+            else{
+                //user is a guest or it's their first time logging in, so don't do anything, just create a new game without loading anything
+            }
+
+        }, 3000)
+
 
         //set the listener to the image
         binding.imageToTap.setOnClickListener {
             // Toast.makeText(context, "Tap", Toast.LENGTH_SHORT).show()
-            viewModel.i_timesTapped.value = viewModel.i_timesTapped.value!! + 1
-            viewModel.i_currency.value = viewModel.i_currency.value!! + 1
+            viewModel.i_timesTapped.value = viewModel.timesTapped.value!! + 1
+            viewModel.i_currency.value = viewModel.currency.value!! + 1
             //Toast.makeText(context, "Tapped, tapped times total: " + viewModel.i_timesTapped.value, Toast.LENGTH_SHORT).show()
         }
 
@@ -80,19 +97,20 @@ class GameHomeFrag : Fragment() {
             }
         })
 
+
+
         //add the buttons
         addBoomButtonsMenu()
 
-        //check whether you got here as a guest or as an alr registered user
-        if(FirebaseAuth.getInstance().currentUser != null){ //if there's a user, gotta pull all their saved data, and make few changes
-            //loadDataFromFB() TODO PETA SI TU CUENTA NO EXISTIA ANTES YA, PORQUE INTENTA CARGAR COSAS QUE NO HA TENIDO TIEMPO A CREAR AUN
-            //todo idea de solucion: un elvis? que no haga la funcion si da null
-        }
-        else{
-            //user is a guest, so don't do anything, just create a new game without loading anything
-        }
 
+
+        //return the root
+        return binding.root
     }
+
+//    override fun onActivityCreated(savedInstanceState: Bundle?) { //everything in the code using the viewModel should go here; according to the AndroidStudio IDE, but not to Google
+//        super.onActivityCreated(savedInstanceState)
+//    }
 
     private fun addBoomButtonsMenu() {
         //boom buttons, aka fab but prettier-----------------------------------------------------------------------------------------------
@@ -108,6 +126,7 @@ class GameHomeFrag : Fragment() {
 
                     //Toast.makeText(context,"Clicked $index",Toast.LENGTH_SHORT).show()
                     Toast.makeText(context,"Saving...",Toast.LENGTH_SHORT).show()
+                    Log.i("GameHomeFrag", "Saving data to FBCF...")
 
                     saveDataToFB()
 
@@ -122,11 +141,7 @@ class GameHomeFrag : Fragment() {
                         .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
-                            Toast.makeText(
-                                context,
-                                "Clicked $index",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            //Toast.makeText(context,"Clicked $index", Toast.LENGTH_SHORT).show()
                         }
                 }
 
@@ -143,20 +158,15 @@ class GameHomeFrag : Fragment() {
                         .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
-                            Toast.makeText(
-                                context,
-                                "Clicked $index",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            //Toast.makeText(context, "Clicked $index", Toast.LENGTH_SHORT).show()
 
-                            //logs out;
-                            if(isUserLogged()){ saveDataToFB() } //save their data in case they forgot
-                            AuthUI.getInstance().signOut(requireContext())
-                            //todo the idea is doing this in @onFragmentDestroyed or wherever when the app is closed
-
+                            //logs out; if -> just in case
+                            if(isUserLogged()){
+                                AuthUI.getInstance().signOut(requireContext())
+                            }
                             //and then gets to the main frag again
-                            this.findNavController()
-                                .navigate(GameHomeFragDirections.actionGameHomeFragToMainFrag())
+                            this.findNavController().navigate(GameHomeFragDirections.actionGameHomeFragToMainFrag())
+                            this.onDestroy() //destroy the fragment so the viewModel get's destroyed too; reason behind this is avoiding unlimited stackpiles of the same viewModels
                         }
                 }
 
@@ -167,21 +177,21 @@ class GameHomeFrag : Fragment() {
                         .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
-                            Toast.makeText(
-                                context,
-                                "Clicked $index",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            //Toast.makeText(context,"Clicked $index",Toast.LENGTH_SHORT).show()
                         }
                 }
             }
             binding.bmb.addBuilder(bmbButton)
         }
         //---------------------------------------------------------------------------------------------------------------------------------
+
+
     }
 
     private fun saveDataToFB() {
+        //add one saving, personal purposes.
         viewModel.i_timesSaved.value = viewModel.i_timesSaved.value!! + 1
+
         db.collection("accounts").whereEqualTo("id", getUserUid())
             .addSnapshotListener { snapshots, e ->
 
@@ -219,7 +229,7 @@ class GameHomeFrag : Fragment() {
             val tapMultiplier = documentSnapshot.getLong("tapMultiplier")
             val currency = documentSnapshot.getLong("currency")
             val timesSaved = documentSnapshot.getLong("timesSaved")
-            val upgrades = documentSnapshot.get("upgrades") as HashMap<String, HashMap<String, Any>>
+            val upgrades = documentSnapshot.get("upgrades") as? HashMap<String, HashMap<String, Any>>
 
             viewModel.i_timesTapped.value = timesTapped!!.toInt()
             viewModel.i_tapMultiplier.value = tapMultiplier!!.toInt()
@@ -231,6 +241,48 @@ class GameHomeFrag : Fragment() {
     }
 
 
+    private fun setSplashy(){
+        Splashy(activity!!)
+            .setLogo(R.drawable.blue_thunder)
+            .setTitle("")//.setTitleColor(R.color.colorPrimaryDark)
+            .setSubTitle("Loading your data...!").setSubTitleColor(R.color.colorPrimaryDark)
+            //.showProgress(true).setProgressColor(R.color.colorPrimary)
+            .setBackgroundResource(R.color.usuallyblack)
+            .setAnimation(Splashy.Animation.GLOW_LOGO, 1500)
+            //.setAnimation(Splashy.Animation.SLIDE_IN_LEFT_RIGHT, 1500)
+            .setFullScreen(true)
+            .setTime(4000)
+            .show()
+    }
+
+
+    //--------------overrides
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if(isUserLogged()) { //only if user logged
+            saveDataToFB() //save on destroy, so if they exit, at least you save their things before this happening. TODO if you kill the app by "swiping" it doesn't seem to work.
+        }
+
+    }
+
+    //onClick method for the drawer items
+//    override fun | this.nav_view. | onNavigationItemSelectedListener { menuItem ->
+//        when (menuItem.itemId) {
+//            R.id.menu_electrify -> {
+//
+//            }
+//            R.id.menu_directCurrent -> {
+//
+//            }
+//        }
+//        true
+//    }
+
+
+
 }
 
 
@@ -239,3 +291,4 @@ class GameHomeFrag : Fragment() {
 fun isUserLogged(): Boolean {
     return FirebaseAuth.getInstance().currentUser != null
 }
+

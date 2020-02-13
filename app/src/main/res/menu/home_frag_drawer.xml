@@ -3,69 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/i1"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_home" />
-        <item
-            android:id="@+id/i2"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_gallery" />
-        <item
-            android:id="@+id/i3"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_slideshow" />
-        <item
-            android:id="@+id/i4"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_tools" />
-        <item
-            android:id="@+id/i5"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_home" />
-        <item
-            android:id="@+id/i6"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_gallery" />
-        <item
-            android:id="@+id/i7"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_slideshow" />
-        <item
-            android:id="@+id/i8"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_tools" />
-        <item
-            android:id="@+id/i9"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_home" />
-        <item
-            android:id="@+id/i10"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_gallery" />
-        <item
-            android:id="@+id/i11"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_slideshow" />
-        <item
-            android:id="@+id/i12"
-            android:icon="@drawable/cancel"
-            android:title="@string/menu_tools" />
-    </group>
+    <item android:title="Tap Upgrades">
+        <group android:checkableBehavior="single">
+            <item
+                android:id="@+id/menu_electrify"
+                android:icon="@drawable/cancel"
+                android:title="Electrify" />
+        </group>
+    </item>
 
 
-    <item android:title="Communicate">
+    <item android:title="Idle Upgrades">
         <menu>
             <item
-                android:id="@+id/nav_share"
+                android:id="@+id/menu_directCurrent"
                 android:icon="@drawable/cancel"
-                android:title="@string/menu_share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/cancel"
-                android:title="@string/menu_send" />
+                android:title="Direct Current" />
         </menu>
     </item>
 
