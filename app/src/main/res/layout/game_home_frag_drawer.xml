@@ -5,26 +5,20 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
+    android:fitsSystemWindows="false"
     tools:openDrawer="start">
 
     <!-- Layout principal de la actividad -->
     <include layout="@layout/main_activity" />
-
-    <!-- Recycler -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
 
     <!-- Layout del menú lateral (Navigation View) -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
         android:layout_gravity="end"
-        app:menu="@menu/home_frag_drawer"/>
+        app:itemTextColor="@drawable/menu_item_style"
+        android:fitsSystemWindows="false"
+        app:menu="@menu/home_frag_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -25,6 +25,7 @@ import org.vono.luisdtefd.vonclicker.R
 import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton
 import com.rbddevs.splashy.Splashy
 import kotlinx.android.synthetic.main.game_home_frag_drawer.*
+import org.vono.luisdtefd.vonclicker.MainActivity
 import org.vono.luisdtefd.vonclicker.login.LoginFrag
 import org.vono.luisdtefd.vonclicker.login.getCurrentUsernameString
 import org.vono.luisdtefd.vonclicker.login.getUserUid
@@ -53,8 +54,9 @@ class GameHomeFrag : Fragment() {
         //call splashy (library splash screen)
         setSplashy()
 
-        //enable the drawer
-        activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+        //get & enable the drawer
+        var drawer = activity!!.findViewById<DrawerLayout>(R.id.drawer_layout)
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
 
         //ref the binding
         binding = DataBindingUtil.inflate(inflater, R.layout.game_home_fragment, container, false)
@@ -97,6 +99,19 @@ class GameHomeFrag : Fragment() {
             }
         })
 
+
+        //OnClick for the drawer's items
+        (activity as MainActivity).navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.menu_electrify -> {
+
+                }
+                R.id.menu_directCurrent -> {
+
+                }
+            }
+            true
+        }
 
 
         //add the buttons
@@ -186,6 +201,9 @@ class GameHomeFrag : Fragment() {
         //---------------------------------------------------------------------------------------------------------------------------------
 
 
+
+
+
     }
 
     private fun saveDataToFB() {
@@ -267,20 +285,6 @@ class GameHomeFrag : Fragment() {
         }
 
     }
-
-    //onClick method for the drawer items
-//    override fun | this.nav_view. | onNavigationItemSelectedListener { menuItem ->
-//        when (menuItem.itemId) {
-//            R.id.menu_electrify -> {
-//
-//            }
-//            R.id.menu_directCurrent -> {
-//
-//            }
-//        }
-//        true
-//    }
-
 
 
 }

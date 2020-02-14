@@ -4,12 +4,12 @@
     tools:showIn="navigation_view">
 
     <item android:title="Tap Upgrades">
-        <group android:checkableBehavior="single">
+        <menu>
             <item
                 android:id="@+id/menu_electrify"
                 android:icon="@drawable/cancel"
                 android:title="Electrify" />
-        </group>
+        </menu>
     </item>
 
 
