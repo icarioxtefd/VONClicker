@@ -21,7 +21,7 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
-import com.google.firebase.firestore.local.LocalViewChanges
+
 import java.util.HashMap
 
 
@@ -105,9 +105,11 @@ class LoginFrag : Fragment() {
         // Create and launch sign-in intent. We listen to the response of this activity with the
         // SIGN_IN_RESULT_CODE code.
         startActivityForResult(
-            AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(
-                providers
-            ).build(), SIGN_IN_RESULT_CODE
+            AuthUI.getInstance()
+                .createSignInIntentBuilder()
+                .setAvailableProviders(providers)
+                .setTheme(R.style.LoginTheme)
+                .build(), SIGN_IN_RESULT_CODE
         )
     }
 
@@ -170,7 +172,9 @@ class LoginFrag : Fragment() {
         db.collection("accounts").whereEqualTo("id", getUserUid()).
             addSnapshotListener{ snapshots, e ->
 
-                Log.i(TAG, "Trying to create user " + "${getCurrentUsernameString()} with uid: " + getUserUid() )
+                let {
+                    Log.i(TAG, "Trying to create user " + "${getCurrentUsernameString()} with uid: " + getUserUid() )
+                }
 
                 if(snapshots!!.isEmpty){ //if there's no acc created yet
                     //make it
@@ -179,7 +183,7 @@ class LoginFrag : Fragment() {
 
                     val data = HashMap<String, Any>()
                     data["username"] = getCurrentUsernameString()
-                    data["id"] = getUserUid()
+                    data["id"] = getUserUid()!!
 
                     //add the new doc to the collection
                     db.collection("accounts").document(getCurrentUsernameString()).set(data)
@@ -190,7 +194,8 @@ class LoginFrag : Fragment() {
                     var userPlayedData = HashMap<String, Any>()
 
                     userPlayedData["timesTapped"] = 0
-                    userPlayedData["timesSaved"] = 0
+                    userPlayedData["timesSavedManually"] = 0
+                    userPlayedData["timesSavedByApp"] = 0
                     userPlayedData["currency"] = 0
                     userPlayedData["tapMultiplier"] = 1
 
@@ -233,7 +238,5 @@ class LoginFrag : Fragment() {
 }
 
 //xtra functions that I made myself in order to shorten calls
-
 fun getCurrentUsernameString() = FirebaseAuth.getInstance().currentUser?.displayName.toString()
-
-fun getUserUid() = FirebaseAuth.getInstance().currentUser!!.uid
+fun getUserUid() = FirebaseAuth.getInstance().currentUser?.uid

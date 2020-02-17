@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
 
         navigationView = findViewById(R.id.nav_view)
         navigationView.itemIconTintList = null //for keeping the original colors of the icons
-        navigationView.setBackgroundColor(resources.getColor(R.color.usuallygrey)) //change its background color
 
     }
 

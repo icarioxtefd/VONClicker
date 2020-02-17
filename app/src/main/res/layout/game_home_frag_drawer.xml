@@ -17,8 +17,11 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        app:itemTextColor="@drawable/menu_item_style"
+        android:layout_marginTop="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/usuallygrey"
         android:fitsSystemWindows="false"
+        app:itemTextColor="@drawable/menu_item_style"
         app:menu="@menu/home_frag_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

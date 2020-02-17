@@ -6,12 +6,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 
+
 class GameHomeViewModel : ViewModel() {
     var i_logOutExitString = MutableLiveData<String>()
     val logOutExitString: LiveData<String> get() = i_logOutExitString
 
-    var i_timesSaved = MutableLiveData<Int>()
-    val timesSaved: LiveData<Int> get() = i_timesSaved
+    var i_timesSavedManually = MutableLiveData<Int>()
+    val timesSavedManually : LiveData<Int> get() = i_timesSavedManually
+
+    var i_timesSavedByApp = MutableLiveData<Int>()
+    val timesSavedByApp: LiveData<Int> get() = i_timesSavedByApp
 
     var i_timesTapped = MutableLiveData<Int>()
     val timesTapped: LiveData<Int> get() = i_timesTapped
@@ -33,11 +37,12 @@ class GameHomeViewModel : ViewModel() {
         i_logOutExitString.value = if (isUserLogged()) "Log Out" else "Exit"
         i_timesTapped.value = 0
         i_tapMultiplier.value = 1
-        i_timesSaved.value = 0
+        i_timesSavedManually.value = 0
+        i_timesSavedByApp.value = 0
         i_currency.value = 0
         initializeUpgradesMap() //i_upgrades.value
 
-        Log.i("GameHomeViewModel", "Init")
+        Log.i("GameHomeViewModel", "GameHomeViewModel initialized")
 
     }
 

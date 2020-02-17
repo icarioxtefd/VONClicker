@@ -8,15 +8,12 @@ import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -24,12 +21,11 @@ import org.vono.luisdtefd.vonclicker.databinding.GameHomeFragmentBinding
 import org.vono.luisdtefd.vonclicker.R
 import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton
 import com.rbddevs.splashy.Splashy
-import kotlinx.android.synthetic.main.game_home_frag_drawer.*
+
 import org.vono.luisdtefd.vonclicker.MainActivity
-import org.vono.luisdtefd.vonclicker.login.LoginFrag
 import org.vono.luisdtefd.vonclicker.login.getCurrentUsernameString
 import org.vono.luisdtefd.vonclicker.login.getUserUid
-import java.lang.Exception
+
 import java.util.HashMap
 
 
@@ -51,8 +47,9 @@ class GameHomeFrag : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        //call splashy (library splash screen)
-        setSplashy()
+        //call splashy (library splash screen), but only if they are logged
+        if(isUserLogged())
+            setSplashy()
 
         //get & enable the drawer
         var drawer = activity!!.findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -70,18 +67,13 @@ class GameHomeFrag : Fragment() {
         viewModel = ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
 
 
-        Handler().postDelayed({  //make the loading wait 2 secs, so it has enough time to init the observers, save to FB, and load from FB if necessary. THIS IS A MUST, IT WILL CRASH OTHERWISE
+        //check whether you got here as a guest or as an alr registered user.
+        if (FirebaseAuth.getInstance().currentUser != null) { //if there's a user, gotta pull all their saved data, and make few changes
+            Log.i("GameHomeFrag", "Trying to fetch data from FBCF...")
+            loadDataFromFB()
+        } else
+        //user is a guest, so don't do anything, just create a new game without loading anything
 
-            //check whether you got here as a guest or as an alr registered user.
-            if(FirebaseAuth.getInstance().currentUser != null){ //if there's a user, gotta pull all their saved data, and make few changes
-                Log.i("GameHomeFrag", "Trying to fetch data from FBCF...")
-                loadDataFromFB()
-            }
-            else{
-                //user is a guest or it's their first time logging in, so don't do anything, just create a new game without loading anything
-            }
-
-        }, 3000)
 
 
         //set the listener to the image
@@ -138,11 +130,12 @@ class GameHomeFrag : Fragment() {
                 .unable(! isUserLogged()).unableImageRes(R.drawable.save).unableColor(android.R.color.black) //unable the button if there's no logged user
                 .listener { index ->
                     // When the boom-button corresponding this builder is clicked.
+                    print("Clicked $index button")
 
-                    //Toast.makeText(context,"Clicked $index",Toast.LENGTH_SHORT).show()
                     Toast.makeText(context,"Saving...",Toast.LENGTH_SHORT).show()
                     Log.i("GameHomeFrag", "Saving data to FBCF...")
 
+                    viewModel.i_timesSavedManually.value = viewModel.timesSavedManually.value!! + 1
                     saveDataToFB()
 
                 }
@@ -156,7 +149,7 @@ class GameHomeFrag : Fragment() {
                         .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
-                            //Toast.makeText(context,"Clicked $index", Toast.LENGTH_SHORT).show()
+                            print("Clicked $index button")
                         }
                 }
 
@@ -173,7 +166,7 @@ class GameHomeFrag : Fragment() {
                         .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
-                            //Toast.makeText(context, "Clicked $index", Toast.LENGTH_SHORT).show()
+                            print("Clicked $index button")
 
                             //logs out; if -> just in case
                             if(isUserLogged()){
@@ -192,7 +185,7 @@ class GameHomeFrag : Fragment() {
                         .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
-                            //Toast.makeText(context,"Clicked $index",Toast.LENGTH_SHORT).show()
+                            print("Clicked $index button")
                         }
                 }
             }
@@ -207,9 +200,6 @@ class GameHomeFrag : Fragment() {
     }
 
     private fun saveDataToFB() {
-        //add one saving, personal purposes.
-        viewModel.i_timesSaved.value = viewModel.i_timesSaved.value!! + 1
-
         db.collection("accounts").whereEqualTo("id", getUserUid())
             .addSnapshotListener { snapshots, e ->
 
@@ -226,7 +216,8 @@ class GameHomeFrag : Fragment() {
                         userPlayedData["timesTapped"] = viewModel.timesTapped.value!!
                         userPlayedData["tapMultiplier"] = viewModel.tapMultiplier.value!!
                         userPlayedData["currency"] = viewModel.currency.value!!
-                        userPlayedData["timesSaved"] = viewModel.timesSaved.value!!
+                        userPlayedData["timesSavedManually"] = viewModel.timesSavedManually.value!!
+                        userPlayedData["timesSavedByApp"] = viewModel.timesSavedByApp.value!!
 
                         //add the root map from the viewModel
                         userPlayedData["upgrades"] = viewModel.i_upgrades.value!!
@@ -246,13 +237,15 @@ class GameHomeFrag : Fragment() {
             val timesTapped = documentSnapshot.getLong("timesTapped") //firestore doesn't have getInt() so well, let's hope this will do
             val tapMultiplier = documentSnapshot.getLong("tapMultiplier")
             val currency = documentSnapshot.getLong("currency")
-            val timesSaved = documentSnapshot.getLong("timesSaved")
+            val timesSavedManually = documentSnapshot.getLong("timesSavedManually")
+            val timesSavedByApp = documentSnapshot.getLong("timesSavedByApp")
             val upgrades = documentSnapshot.get("upgrades") as? HashMap<String, HashMap<String, Any>>
 
             viewModel.i_timesTapped.value = timesTapped!!.toInt()
             viewModel.i_tapMultiplier.value = tapMultiplier!!.toInt()
             viewModel.i_currency.value = currency!!.toInt()
-            viewModel.i_timesSaved.value = timesSaved!!.toInt()
+            viewModel.i_timesSavedManually.value = timesSavedManually!!.toInt()
+            viewModel.i_timesSavedByApp.value = timesSavedByApp!!.toInt()
             viewModel.i_upgrades.value = upgrades
 
         }
@@ -281,6 +274,7 @@ class GameHomeFrag : Fragment() {
         super.onDestroy()
 
         if(isUserLogged()) { //only if user logged
+            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1 //todo lo hace dos veces porque lo llamo desde el logout button
             saveDataToFB() //save on destroy, so if they exit, at least you save their things before this happening. TODO if you kill the app by "swiping" it doesn't seem to work.
         }
 
@@ -289,10 +283,7 @@ class GameHomeFrag : Fragment() {
 
 }
 
-
-
 // know whether there's a logged user or not
 fun isUserLogged(): Boolean {
     return FirebaseAuth.getInstance().currentUser != null
 }
-
