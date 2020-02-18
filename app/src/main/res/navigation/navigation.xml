@@ -37,6 +37,21 @@
             app:popEnterAnim="@anim/fade_out_fade_in"
             app:popUpTo="@+id/mainFrag"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_gameHomeFrag_to_infoFrag"
+            app:destination="@id/infoFrag"
+            app:enterAnim="@anim/fade_out_fade_in"
+            app:exitAnim="@anim/fade_in_fade_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/infoFrag"
+        android:name="org.vono.luisdtefd.vonclicker.info.InfoFrag"
+        android:label="InfoFrag" >
+        <action
+            android:id="@+id/action_infoFrag_to_gameHomeFrag"
+            app:destination="@id/gameHomeFrag"
+            app:enterAnim="@anim/fade_out_fade_in"
+            app:exitAnim="@anim/fade_in_fade_out" />
     </fragment>
 
 </navigation>

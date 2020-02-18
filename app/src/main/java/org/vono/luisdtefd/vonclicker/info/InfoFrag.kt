@@ -8,8 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.fragment.findNavController
 import org.vono.luisdtefd.vonclicker.R
 import org.vono.luisdtefd.vonclicker.databinding.InfoFragLayoutBinding
+
+import org.vono.luisdtefd.vonclicker.gameMain.GameHomeViewModel
 
 
 class InfoFrag : Fragment() {
@@ -18,7 +21,6 @@ class InfoFrag : Fragment() {
         fun newInstance() = InfoFrag()
     }
 
-    private lateinit var viewModel: InfoViewModel
     private lateinit var binding: InfoFragLayoutBinding
 
     override fun onCreateView(
@@ -34,17 +36,22 @@ class InfoFrag : Fragment() {
         //ref the binding
         binding = DataBindingUtil.inflate(inflater, R.layout.info_frag_layout, container, false)
 
-
         //set LCO
         binding.lifecycleOwner = this
 
 
         //set the viewModel and everything
-        viewModel = ViewModelProviders.of(this).get(InfoViewModel::class.java)
+        val viewModel = activity?.run {
+            ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
+        }
+
+        //ref the binding's var
+        binding.viewModelFromGH = viewModel
 
 
-
-
+        binding.fabGoBack.setOnClickListener{
+            this.findNavController().navigate(InfoFragDirections.actionInfoFragToGameHomeFrag())
+        }
 
 
         return binding.root

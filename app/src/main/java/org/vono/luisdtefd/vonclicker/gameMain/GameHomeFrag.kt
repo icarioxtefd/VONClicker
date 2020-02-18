@@ -149,6 +149,9 @@ class GameHomeFrag : Fragment() {
                         .normalColor(R.color.usuallygrey).shadowColor(R.color.usuallyblack)
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
+
+                            //go to the info frag
+                            this.findNavController().navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag())
                             print("Clicked $index button")
                         }
                 }
