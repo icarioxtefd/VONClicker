@@ -12,21 +12,23 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import com.firebase.ui.auth.AuthUI
+
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 
 import org.vono.luisdtefd.vonclicker.databinding.GameHomeFragmentBinding
 import org.vono.luisdtefd.vonclicker.R
 import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton
-import com.rbddevs.splashy.Splashy
 
 import org.vono.luisdtefd.vonclicker.MainActivity
 import org.vono.luisdtefd.vonclicker.login.getCurrentUsernameString
 import org.vono.luisdtefd.vonclicker.login.getUserUid
 
 import java.util.HashMap
+
+
 
 
 class GameHomeFrag : Fragment() {
@@ -40,16 +42,12 @@ class GameHomeFrag : Fragment() {
 
     //ref the CF database and the accounts doc--------
     private val db = FirebaseFirestore.getInstance()
-    lateinit var docRef: DocumentReference
+    lateinit var collRef: CollectionReference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        //call splashy (library splash screen), but only if they are logged
-        if(isUserLogged())
-            setSplashy()
 
         //get & enable the drawer
         var drawer = activity!!.findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -69,8 +67,13 @@ class GameHomeFrag : Fragment() {
 
         //check whether you got here as a guest or as an alr registered user.
         if (FirebaseAuth.getInstance().currentUser != null) { //if there's a user, gotta pull all their saved data, and make few changes
-            Log.i("GameHomeFrag", "Trying to fetch data from FBCF...")
-            loadDataFromFB()
+            val args = GameHomeFragArgs.fromBundle(arguments!!)
+            if (args.firstTimeLog) {
+                Log.i("GameHomeFrag", "Trying to fetch data from FBCF...")
+                loadDataFromFB()
+            }
+            else
+                Log.i("GameHomeFrag", "Bro it's their first time, I'm not loading 0s")
         } else
         //user is a guest, so don't do anything, just create a new game without loading anything
 
@@ -172,12 +175,12 @@ class GameHomeFrag : Fragment() {
                             print("Clicked $index button")
 
                             //logs out; if -> just in case
-                            if(isUserLogged()){
-                                AuthUI.getInstance().signOut(requireContext())
+                            if(viewModel.logOutExitString.value == "Log Out"){
+                                //AuthUI.getInstance().signOut(requireContext())
+                                FirebaseAuth.getInstance().signOut()
                             }
                             //and then gets to the main frag again
-                            this.findNavController().navigate(GameHomeFragDirections.actionGameHomeFragToMainFrag())
-                            this.onDestroy() //destroy the fragment so the viewModel get's destroyed too; reason behind this is avoiding unlimited stackpiles of the same viewModels
+                            this.findNavController().popBackStack()
                         }
                 }
 
@@ -233,42 +236,72 @@ class GameHomeFrag : Fragment() {
     }
 
     private fun loadDataFromFB() {
-        docRef =
-            db.collection("accounts").document(getCurrentUsernameString()).collection("played_data")
-                .document("generals")
-        docRef.get().addOnSuccessListener { documentSnapshot ->
-            val timesTapped = documentSnapshot.getLong("timesTapped") //firestore doesn't have getInt() so well, let's hope this will do
-            val tapMultiplier = documentSnapshot.getLong("tapMultiplier")
-            val currency = documentSnapshot.getLong("currency")
-            val timesSavedManually = documentSnapshot.getLong("timesSavedManually")
-            val timesSavedByApp = documentSnapshot.getLong("timesSavedByApp")
-            val upgrades = documentSnapshot.get("upgrades") as? HashMap<String, HashMap<String, Any>>
 
-            viewModel.i_timesTapped.value = timesTapped!!.toInt()
-            viewModel.i_tapMultiplier.value = tapMultiplier!!.toInt()
-            viewModel.i_currency.value = currency!!.toInt()
-            viewModel.i_timesSavedManually.value = timesSavedManually!!.toInt()
-            viewModel.i_timesSavedByApp.value = timesSavedByApp!!.toInt()
-            viewModel.i_upgrades.value = upgrades
+        //create the args to be filled
+        var docId: String?
+        var timesTapped: Long?
+        var tapMultiplier: Long?
+        var currency: Long?
+        var timesSavedManually: Long?
+        var timesSavedByApp: Long?
+        var upgrades: HashMap<String, HashMap<String, Any>>?
+
+
+        //get the reference of the whole collection
+        collRef = db.collection("accounts").document(getCurrentUsernameString()).collection("played_data")
+        //add the snapshot listener
+        collRef.addSnapshotListener { snapshots, e ->
+            for (dc in snapshots!!.documentChanges) {
+                when (dc.type) {
+                    DocumentChange.Type.ADDED -> { //si se añade en tiempo real + la primera carga
+                        docId = dc.document.id //general's doc (name)
+
+                        //assign the values to the vars
+                        timesTapped = dc.document.getLong("timesTapped") //firestore doesn't have getInt() so well, let's hope this will do
+                        tapMultiplier = dc.document.getLong("tapMultiplier")
+                        currency = dc.document.getLong("currency")
+                        timesSavedManually = dc.document.getLong("timesSavedManually")
+                        timesSavedByApp = dc.document.getLong("timesSavedByApp")
+                        upgrades = dc.document.get("upgrades") as HashMap<String, HashMap<String, Any>>?
+
+                        //add them to the viewModel
+                        viewModel.i_timesTapped.value = timesTapped!!.toInt()
+                        viewModel.i_tapMultiplier.value = tapMultiplier!!.toInt()
+                        viewModel.i_currency.value = currency!!.toInt()
+                        viewModel.i_timesSavedManually.value = timesSavedManually!!.toInt()
+                        viewModel.i_timesSavedByApp.value = timesSavedByApp!!.toInt()
+                        viewModel.i_upgrades.value = upgrades
+                    }
+
+                    DocumentChange.Type.REMOVED -> { //si se modifica en tiempo real; cambios
+                        //rellenar en caso de necesidad
+                    }
+
+                    DocumentChange.Type.MODIFIED -> { //si se modifica en tiempo real; cambios
+                        //hacer lo mismo que en added, de ser necesario; pero que el id sea el mismo
+                    }
+                }
+            }
+
+
+
+//            .get().addOnSuccessListener { documentSnapshot ->
+//            val timesTapped = documentSnapshot.getLong("timesTapped") //firestore doesn't have getInt() so well, let's hope this will do
+//            val tapMultiplier = documentSnapshot.getLong("tapMultiplier")
+//            val currency = documentSnapshot.getLong("currency")
+//            val timesSavedManually = documentSnapshot.getLong("timesSavedManually")
+//            val timesSavedByApp = documentSnapshot.getLong("timesSavedByApp")
+//            val upgrades = documentSnapshot.get("upgrades") as? HashMap<String, HashMap<String, Any>>
+//
+//            viewModel.i_timesTapped.value = timesTapped!!.toInt()
+//            viewModel.i_tapMultiplier.value = tapMultiplier!!.toInt()
+//            viewModel.i_currency.value = currency!!.toInt()
+//            viewModel.i_timesSavedManually.value = timesSavedManually!!.toInt()
+//            viewModel.i_timesSavedByApp.value = timesSavedByApp!!.toInt()
+//            viewModel.i_upgrades.value = upgrades
 
         }
     }
-
-
-    private fun setSplashy(){
-        Splashy(activity!!)
-            .setLogo(R.drawable.blue_thunder)
-            .setTitle("")//.setTitleColor(R.color.colorPrimaryDark)
-            .setSubTitle("Loading your data...!").setSubTitleColor(R.color.colorPrimaryDark)
-            //.showProgress(true).setProgressColor(R.color.colorPrimary)
-            .setBackgroundResource(R.color.usuallyblack)
-            .setAnimation(Splashy.Animation.GLOW_LOGO, 1500)
-            //.setAnimation(Splashy.Animation.SLIDE_IN_LEFT_RIGHT, 1500)
-            .setFullScreen(true)
-            .setTime(4000)
-            .show()
-    }
-
 
     //--------------overrides
 
@@ -277,12 +310,11 @@ class GameHomeFrag : Fragment() {
         super.onDestroy()
 
         if(isUserLogged()) { //only if user logged
-            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1 //todo lo hace dos veces porque lo llamo desde el logout button
+            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
             saveDataToFB() //save on destroy, so if they exit, at least you save their things before this happening. TODO if you kill the app by "swiping" it doesn't seem to work.
         }
 
     }
-
 
 }
 

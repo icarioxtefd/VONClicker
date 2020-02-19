@@ -35,13 +35,4 @@ class MainActivity : AppCompatActivity() {
         navigationView.itemIconTintList = null //for keeping the original colors of the icons
 
     }
-
-    //silly fun in order to not make the user go back, since I don't want that lolol
-    override fun onBackPressed() {
-        //super.onBackPressed() nu-oh I'm not letting u go back
-        Toast.makeText(applicationContext, "Nu-oh", Toast.LENGTH_LONG).show()
-    }
-
-
-
 }

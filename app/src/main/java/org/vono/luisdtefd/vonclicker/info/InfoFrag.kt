@@ -49,11 +49,6 @@ class InfoFrag : Fragment() {
         binding.viewModelFromGH = viewModel
 
 
-        binding.fabGoBack.setOnClickListener{
-            this.findNavController().navigate(InfoFragDirections.actionInfoFragToGameHomeFrag())
-        }
-
-
         return binding.root
     }
 

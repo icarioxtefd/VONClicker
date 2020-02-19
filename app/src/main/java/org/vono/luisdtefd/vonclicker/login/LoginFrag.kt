@@ -21,6 +21,12 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
+import com.rbddevs.splashy.Splashy
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.vono.luisdtefd.vonclicker.gameMain.isUserLogged
 
 import java.util.HashMap
 
@@ -45,6 +51,7 @@ class LoginFrag : Fragment() {
     private val db = FirebaseFirestore.getInstance()
     lateinit var docRef: CollectionReference
 
+    var firstTimeLog: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,6 +64,13 @@ class LoginFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
+
+        //disable persistence so offline data is not saved (possible errors if logging in from different devices)
+        val settings = FirebaseFirestoreSettings.Builder()
+            .setPersistenceEnabled(false)
+            .build()
+        db.firestoreSettings = settings
+        //---------------------------------
 
         return binding.root
     }
@@ -172,12 +186,12 @@ class LoginFrag : Fragment() {
         db.collection("accounts").whereEqualTo("id", getUserUid()).
             addSnapshotListener{ snapshots, e ->
 
-                let {
-                    Log.i(TAG, "Trying to create user " + "${getCurrentUsernameString()} with uid: " + getUserUid() )
-                }
-
+                Log.i(TAG, "Trying to create user " + "${getCurrentUsernameString()} with uid: " + getUserUid() )
                 if(snapshots!!.isEmpty){ //if there's no acc created yet
                     //make it
+
+                    //make the var true for avoiding first loading time
+                    firstTimeLog = true
 
                     Log.i(TAG, "User doesn't exist yet, creating user " + "${getCurrentUsernameString()} with uid: " + getUserUid() )
 
@@ -231,8 +245,26 @@ class LoginFrag : Fragment() {
     }
 
 
+    private fun setSplashy(){
+        Splashy(activity!!)
+            .setLogo(R.drawable.blue_thunder)
+            .setTitle("")//.setTitleColor(R.color.colorPrimaryDark)
+            .setSubTitle("Loading your data...!").setSubTitleColor(R.color.colorPrimaryDark)
+            //.showProgress(true).setProgressColor(R.color.colorPrimary)
+            .setBackgroundResource(R.color.usuallyblack)
+            .setAnimation(Splashy.Animation.GLOW_LOGO, 1500)
+            //.setAnimation(Splashy.Animation.SLIDE_IN_LEFT_RIGHT, 1500)
+            .setFullScreen(true)
+            .setTime(4000)
+            .show()
+    }
+
     private fun goToGameHome() { // silly fun just for not having all this line all over the page
-        this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag())
+        //call splashy (library splash screen), but only if they are logged, just in case; in a coroutine so everything goes on
+
+        if(isUserLogged())
+            setSplashy()
+        this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag(firstTimeLog))
     }
 
 }
