@@ -65,6 +65,33 @@
             app:popExitAnim="@anim/fade_in_fade_out"
             app:popUpTo="@+id/gameHomeFrag"
             app:popUpToInclusive="false" />
+        <argument
+            android:name="timesTapped"
+            app:argType="integer" />
+        <argument
+            android:name="timesSavedByApp"
+            app:argType="integer" />
+        <argument
+            android:name="timesSavedManually"
+            app:argType="integer" />
+        <argument
+            android:name="currency"
+            app:argType="integer" />
+        <argument
+            android:name="tapMultiplier"
+            app:argType="integer" />
+        <argument
+            android:name="electrifyBought"
+            app:argType="boolean" />
+        <argument
+            android:name="electrifyLevel"
+            app:argType="integer" />
+        <argument
+            android:name="directCurrentBought"
+            app:argType="boolean" />
+        <argument
+            android:name="directCurrentLevel"
+            app:argType="integer" />
     </fragment>
 
 </navigation>

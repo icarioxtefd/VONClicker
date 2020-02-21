@@ -31,6 +31,9 @@ class InfoFrag : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        //get the data fromthe safeargs passed from the GHF
+        val args = InfoFragArgs.fromBundle(arguments!!)
+
         //ref the navController
         navController = this.findNavController()
 
@@ -45,8 +48,14 @@ class InfoFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
-        //get the parcelable from GHF and add the values to the textViews
-
+        //add the values to the textViews
+        binding.textViewCurrency.text = "Actual Currency: " + args.currency.toString()
+        binding.textViewTimesTapped.text = "Total Times Tapped: " + args.timesTapped.toString()
+        binding.textViewTapMultiplier.text = "Active Tap Multiplier: " + args.tapMultiplier.toString()
+        binding.textViewTimesSavedManually.text = "Times that you saved manually: " + args.timesSavedManually.toString()
+        binding.textViewTimesSavedByApp.text = "Times that the app saves for yourself: " + args.timesSavedByApp.toString()
+        binding.textViewElectrify.text = "Electrify Upgrade: Bought -> " + args.electrifyBought + " | Level: " + args.electrifyLevel.toString()
+        binding.textViewDirectCurrent.text = "DC Upgrade: Bought -> " + args.directCurrentBought + " | Level: " + args.directCurrentLevel.toString()
 
         //change the behaviour when user presses back button
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { navController.popBackStack(R.id.gameHomeFrag, false) }

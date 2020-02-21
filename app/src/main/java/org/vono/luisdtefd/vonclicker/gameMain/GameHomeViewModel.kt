@@ -3,9 +3,8 @@ package org.vono.luisdtefd.vonclicker.gameMain
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-
-
 
 class GameHomeViewModel : ViewModel() {
     var i_logOutExitString = MutableLiveData<String>()

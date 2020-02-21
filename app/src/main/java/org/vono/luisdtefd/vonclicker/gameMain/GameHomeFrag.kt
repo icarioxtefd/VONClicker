@@ -30,6 +30,10 @@ import org.vono.luisdtefd.vonclicker.login.getUserUid
 
 import java.util.HashMap
 import com.skydoves.elasticviews.ElasticAnimation
+import android.os.Handler
+import android.os.SystemClock.sleep
+import kotlinx.android.synthetic.main.game_home_fragment.*
+import kotlinx.coroutines.*
 import org.vono.luisdtefd.vonclicker.R
 
 
@@ -101,17 +105,7 @@ class GameHomeFrag : Fragment() {
                 }.doAction()
 
             viewModel.i_timesTapped.value = viewModel.timesTapped.value!! + 1
-
-            if (viewModel.upgrades.value!!["electrify"]!!["level"].toString() == "0")
-                viewModel.i_currency.value = viewModel.currency.value!! + 1
-            else {
-                if (viewModel.upgrades.value!!["electrify"]!!["level"].toString() == "1")
-                    viewModel.i_currency.value = viewModel.currency.value!! + 3
-                else {
-                    if (viewModel.upgrades.value!!["electrify"]!!["level"].toString() == "2")
-                        viewModel.i_currency.value = viewModel.currency.value!! + 6
-                }
-            }
+            viewModel.i_currency.value = viewModel.currency.value!! + viewModel.tapMultiplier.value!!
             //Toast.makeText(context, "Tapped, tapped times total: " + viewModel.i_timesTapped.value, Toast.LENGTH_SHORT).show()
         }
 
@@ -120,6 +114,46 @@ class GameHomeFrag : Fragment() {
             binding.textViewCurrency.text = "Currency: ${viewModel.currency.value.toString()}"
         })
 
+        //observer for the electrify updates -> tappingMultiplier, depending on the level of the electrify upgrade
+        viewModel.upgrades.observe(this, Observer {
+
+            //observer of electrify upgrade
+            when (viewModel.upgrades.value!!["electrify"]!!["level"] as Int){
+                0 -> { viewModel.i_tapMultiplier.value = 1 }
+                1 -> { viewModel.i_tapMultiplier.value = 3 }
+                2 -> { viewModel.i_tapMultiplier.value = 6 }
+            }
+
+            //observer of directCurrent upgrade
+            if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == true){
+
+                val firstJob: Job
+                when (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int){
+                    1 -> {
+                        firstJob = GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+                            while (true) {
+                                sleep(5000)
+                                withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
+                                    binding.imageToTap.performClick()
+                                }
+                            }
+                        }
+                    }
+                    2 -> {
+                        //firstJob.cancel()
+                        GlobalScope.launch(Dispatchers.Default){ // same as above
+                            while (true) { //todo the cancel of above to solve having two dispatchers
+                                sleep(2500)
+                                withContext(Dispatchers.Main){ // same as above
+                                    binding.imageToTap.performClick()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        })
 
         //OnClick for the drawer's items
         (activity as MainActivity).navigationView.setNavigationItemSelectedListener { menuItem ->
@@ -128,7 +162,7 @@ class GameHomeFrag : Fragment() {
                    //create the necessary map and check which values you have to change, then replace the liveData var
                     val activatedElectrifyMap = HashMap<String, Any>()
 
-                    if (viewModel.i_upgrades.value!!["electrify"]!!["bought"] == false){
+                    if (viewModel.upgrades.value!!["electrify"]!!["bought"] == false){
                         if (viewModel.currency.value!! >= 50){
                             activatedElectrifyMap["bought"] = true
                             activatedElectrifyMap["level"] = 1
@@ -142,7 +176,7 @@ class GameHomeFrag : Fragment() {
                     }
                     else{
                         if (viewModel.currency.value!! >= 100) {
-                            if (viewModel.i_upgrades.value!!["electrify"]!!["level"].toString() == "1"){
+                            if (viewModel.upgrades.value!!["electrify"]!!["level"] as Int == 1){
                                 activatedElectrifyMap["bought"] = true
                                 activatedElectrifyMap["level"] = 2
 
@@ -154,7 +188,7 @@ class GameHomeFrag : Fragment() {
                             }
                         }
                         else{ //NEM to buy
-                            if (viewModel.i_upgrades.value!!["electrify"]!!["level"].toString() == "2"){
+                            if (viewModel.upgrades.value!!["electrify"]!!["level"] as Int == 2){
                                 activatedElectrifyMap["bought"] = true
                                 activatedElectrifyMap["level"] = 2
                             }
@@ -167,11 +201,56 @@ class GameHomeFrag : Fragment() {
 
                     //Note: .replace needs min API SDK 24
                     viewModel.i_upgrades.value!!.replace("electrify", activatedElectrifyMap)
+                    viewModel.i_upgrades.value = viewModel.i_upgrades.value // NECESSARY since if not, the observer DOESN'T get the change and won't work (still don't know why tho)
 
-                    Toast.makeText(context, "Electrify tapped, now: " +viewModel.i_upgrades.value!!.get("electrify"), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Electrify tapped, now: " + viewModel.upgrades.value!!.get("electrify"), Toast.LENGTH_SHORT).show()
                 }
                 R.id.menu_directCurrent -> {
+                    //same as before
+                    val activatedDCMap = HashMap<String, Any>()
 
+                    if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == false){
+                        if (viewModel.currency.value!! >= 150){
+                            activatedDCMap["bought"] = true
+                            activatedDCMap["level"] = 1
+
+                            viewModel.i_currency.value = viewModel.currency.value!! - 150
+                        }
+                        else{ //NEM to buy
+                            activatedDCMap["bought"] = false
+                            activatedDCMap["level"] = 0
+                        }
+                    }
+                    else{
+                        if (viewModel.currency.value!! >= 300) {
+                            if (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int == 1){
+                                activatedDCMap["bought"] = true
+                                activatedDCMap["level"] = 2
+
+                                viewModel.i_currency.value = viewModel.currency.value!! - 300
+                            }
+                            else{ //max level atm 2; so you'd still be 2
+                                activatedDCMap["bought"] = true
+                                activatedDCMap["level"] = 2
+                            }
+                        }
+                        else{ //NEM to buy
+                            if (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int == 2){
+                                activatedDCMap["bought"] = true
+                                activatedDCMap["level"] = 2
+                            }
+                            else{
+                                activatedDCMap["bought"] = true
+                                activatedDCMap["level"] = 1
+                            }
+                        }
+                    }
+
+                    //Note: .replace needs min API SDK 24
+                    viewModel.i_upgrades.value!!.replace("directCurrent", activatedDCMap)
+                    viewModel.i_upgrades.value = viewModel.i_upgrades.value // NECESSARY; same as before
+
+                    Toast.makeText(context, "DC tapped, now: " + viewModel.upgrades.value!!.get("directCurrent"), Toast.LENGTH_SHORT).show()
                 }
             }
             true
@@ -222,8 +301,18 @@ class GameHomeFrag : Fragment() {
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
 
-                            //go to the info frag
-                            navController.navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag())
+                            //go to the info frag, passing the args as safe args (order comes from the navigation's TEXT, NOT in design
+                            navController.navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag(
+                                viewModel.timesTapped.value!!,
+                                viewModel.timesSavedByApp.value!!,
+                                viewModel.timesSavedManually.value!!,
+                                viewModel.currency.value!!,
+                                viewModel.tapMultiplier.value!!,
+                                viewModel.upgrades.value!!["electrify"]!!["bought"] as Boolean,
+                                viewModel.upgrades.value!!["electrify"]!!["level"] as Int,
+                                viewModel.upgrades.value!!["directCurrent"]!!["bought"] as Boolean,
+                                viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int)
+                            )
                             print("Clicked $index button")
                         }
                 }
