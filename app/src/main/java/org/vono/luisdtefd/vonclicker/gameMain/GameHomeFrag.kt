@@ -124,35 +124,35 @@ class GameHomeFrag : Fragment() {
                 "2" -> { viewModel.i_tapMultiplier.value = 6 }
             }
 
-//            todo since this code has some problems; when solved, the same code from below should be erased
-//            //observer of directCurrent upgrade
-//            if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == true){
-//
-//                val firstJob: Job
-//                when (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int){
-//                    1 -> {
-//                        firstJob = GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
-//                            while (true) {
-//                                sleep(5000)
-//                                withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
-//                                    binding.imageToTap.performClick()
-//                                }
-//                            }
-//                        }
-//                    }
-//                    2 -> {
-//                        //firstJob.cancel()
-//                        GlobalScope.launch(Dispatchers.Default){ // same as above
-//                            while (true) { //todo the cancel of above to solve having two dispatchers
-//                                sleep(2500)
-//                                withContext(Dispatchers.Main){ // same as above
-//                                    binding.imageToTap.performClick()
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+
+            //observer of directCurrent upgrade
+            if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == true){
+
+                var jjob: Job? = null
+                when (viewModel.upgrades.value!!["directCurrent"]!!["level"].toString()){
+                    "1" -> {
+                        jjob = GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+                            while (true) {
+                                sleep(5000)
+                                withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
+                                    binding.imageToTap.performClick()
+                                }
+                            }
+                        }
+                    }
+                    "2" -> {
+                        jjob?.cancel() //cancels the said when upgrading and cancels this when (todo happens again after coming back from infoFrag) and It's a bug, it doesn't seem to work at all.
+                        jjob = GlobalScope.launch(Dispatchers.Default){ // same as above
+                            while (true) {
+                                sleep(2500)
+                                withContext(Dispatchers.Main){ // same as above
+                                    binding.imageToTap.performClick()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
         })
 
@@ -216,17 +216,6 @@ class GameHomeFrag : Fragment() {
                             activatedDCMap["level"] = 1
 
                             viewModel.i_currency.value = viewModel.currency.value!! - 150
-
-                            //code to remove if solved the problem from above, just for future implementation (because this is also good and works perfectly)
-                            GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
-                                while (true) {
-                                    sleep(5000)
-                                    withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
-                                        binding.imageToTap.performClick()
-                                    }
-                                }
-                            }
-
                         }
                         else{ //NEM to buy
                             activatedDCMap["bought"] = false
@@ -240,17 +229,6 @@ class GameHomeFrag : Fragment() {
                                 activatedDCMap["level"] = 2
 
                                 viewModel.i_currency.value = viewModel.currency.value!! - 300
-
-                                //same as above
-                                //todo claro, la idea no es que haya *dos* sino que haya uno pero vaya cambiándose, pero, por lo pronto, *es original* y no se aleja de lo que yo quiero tampoco; hasta que decida """arreglarlo""", así se queda
-                                GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
-                                    while (true) {
-                                        sleep(2500)
-                                        withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
-                                            binding.imageToTap.performClick()
-                                        }
-                                    }
-                                }
                             }
                             else{ //max level atm 2; so you'd still be 2
                                 activatedDCMap["bought"] = true
