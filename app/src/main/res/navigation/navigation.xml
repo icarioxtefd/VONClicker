@@ -85,13 +85,13 @@
             app:argType="boolean" />
         <argument
             android:name="electrifyLevel"
-            app:argType="integer" />
+            app:argType="string" />
         <argument
             android:name="directCurrentBought"
             app:argType="boolean" />
         <argument
             android:name="directCurrentLevel"
-            app:argType="integer" />
+            app:argType="string" />
     </fragment>
 
 </navigation>

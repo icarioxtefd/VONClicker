@@ -118,40 +118,41 @@ class GameHomeFrag : Fragment() {
         viewModel.upgrades.observe(this, Observer {
 
             //observer of electrify upgrade
-            when (viewModel.upgrades.value!!["electrify"]!!["level"] as Int){
-                0 -> { viewModel.i_tapMultiplier.value = 1 }
-                1 -> { viewModel.i_tapMultiplier.value = 3 }
-                2 -> { viewModel.i_tapMultiplier.value = 6 }
+            when (viewModel.upgrades.value!!["electrify"]!!["level"].toString()){
+                "0" -> { viewModel.i_tapMultiplier.value = 1 }
+                "1" -> { viewModel.i_tapMultiplier.value = 3 }
+                "2" -> { viewModel.i_tapMultiplier.value = 6 }
             }
 
-            //observer of directCurrent upgrade
-            if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == true){
-
-                val firstJob: Job
-                when (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int){
-                    1 -> {
-                        firstJob = GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
-                            while (true) {
-                                sleep(5000)
-                                withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
-                                    binding.imageToTap.performClick()
-                                }
-                            }
-                        }
-                    }
-                    2 -> {
-                        //firstJob.cancel()
-                        GlobalScope.launch(Dispatchers.Default){ // same as above
-                            while (true) { //todo the cancel of above to solve having two dispatchers
-                                sleep(2500)
-                                withContext(Dispatchers.Main){ // same as above
-                                    binding.imageToTap.performClick()
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            todo since this code has some problems; when solved, the same code from below should be erased
+//            //observer of directCurrent upgrade
+//            if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == true){
+//
+//                val firstJob: Job
+//                when (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int){
+//                    1 -> {
+//                        firstJob = GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+//                            while (true) {
+//                                sleep(5000)
+//                                withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
+//                                    binding.imageToTap.performClick()
+//                                }
+//                            }
+//                        }
+//                    }
+//                    2 -> {
+//                        //firstJob.cancel()
+//                        GlobalScope.launch(Dispatchers.Default){ // same as above
+//                            while (true) { //todo the cancel of above to solve having two dispatchers
+//                                sleep(2500)
+//                                withContext(Dispatchers.Main){ // same as above
+//                                    binding.imageToTap.performClick()
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
         })
 
@@ -215,6 +216,17 @@ class GameHomeFrag : Fragment() {
                             activatedDCMap["level"] = 1
 
                             viewModel.i_currency.value = viewModel.currency.value!! - 150
+
+                            //code to remove if solved the problem from above, just for future implementation (because this is also good and works perfectly)
+                            GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+                                while (true) {
+                                    sleep(5000)
+                                    withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
+                                        binding.imageToTap.performClick()
+                                    }
+                                }
+                            }
+
                         }
                         else{ //NEM to buy
                             activatedDCMap["bought"] = false
@@ -223,11 +235,22 @@ class GameHomeFrag : Fragment() {
                     }
                     else{
                         if (viewModel.currency.value!! >= 300) {
-                            if (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int == 1){
+                            if (viewModel.upgrades.value!!["directCurrent"]!!["level"].toString() == "1"){
                                 activatedDCMap["bought"] = true
                                 activatedDCMap["level"] = 2
 
                                 viewModel.i_currency.value = viewModel.currency.value!! - 300
+
+                                //same as above
+                                //todo claro, la idea no es que haya *dos* sino que haya uno pero vaya cambiándose, pero, por lo pronto, *es original* y no se aleja de lo que yo quiero tampoco; hasta que decida """arreglarlo""", así se queda
+                                GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+                                    while (true) {
+                                        sleep(2500)
+                                        withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
+                                            binding.imageToTap.performClick()
+                                        }
+                                    }
+                                }
                             }
                             else{ //max level atm 2; so you'd still be 2
                                 activatedDCMap["bought"] = true
@@ -235,7 +258,7 @@ class GameHomeFrag : Fragment() {
                             }
                         }
                         else{ //NEM to buy
-                            if (viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int == 2){
+                            if (viewModel.upgrades.value!!["directCurrent"]!!["level"].toString() == "2"){
                                 activatedDCMap["bought"] = true
                                 activatedDCMap["level"] = 2
                             }
@@ -301,6 +324,9 @@ class GameHomeFrag : Fragment() {
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
 
+                            //save before going to info frag, since it'll load again because the fragment gets destroyed when navigating and created back when returning (this is one todo)
+                            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
+                            saveDataToFB()
                             //go to the info frag, passing the args as safe args (order comes from the navigation's TEXT, NOT in design
                             navController.navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag(
                                 viewModel.timesTapped.value!!,
@@ -309,10 +335,10 @@ class GameHomeFrag : Fragment() {
                                 viewModel.currency.value!!,
                                 viewModel.tapMultiplier.value!!,
                                 viewModel.upgrades.value!!["electrify"]!!["bought"] as Boolean,
-                                viewModel.upgrades.value!!["electrify"]!!["level"] as Int,
+                                viewModel.upgrades.value!!["electrify"]!!["level"].toString(),
                                 viewModel.upgrades.value!!["directCurrent"]!!["bought"] as Boolean,
-                                viewModel.upgrades.value!!["directCurrent"]!!["level"] as Int)
-                            )
+                                viewModel.upgrades.value!!["directCurrent"]!!["level"].toString())
+                            ) //Note: as Int cast gives cannot cast error
                             print("Clicked $index button")
                         }
                 }
@@ -354,6 +380,7 @@ class GameHomeFrag : Fragment() {
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
                             print("Clicked $index button")
+                            Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
                         }
                 }
             }
