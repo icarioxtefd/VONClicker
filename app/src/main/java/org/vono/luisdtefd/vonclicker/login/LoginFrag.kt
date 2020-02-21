@@ -123,7 +123,7 @@ class LoginFrag : Fragment() {
                 .createSignInIntentBuilder()
                 .setAvailableProviders(providers)
                 .setTheme(R.style.LoginTheme)
-                .build(), SIGN_IN_RESULT_CODE
+                .build(), LoginFrag.SIGN_IN_RESULT_CODE
         )
     }
 
@@ -153,8 +153,7 @@ class LoginFrag : Fragment() {
      * If there is no logged in user, shows two l
      */
     private fun observeAuthenticationState() {
-        //  Use the authenticationState variable from LoginViewModel to update the UI
-        //  accordingly.
+        //  Use the authenticationState variable from LoginViewModel to update the UI accordingly.
         viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
             when (authenticationState) {
 
@@ -176,8 +175,6 @@ class LoginFrag : Fragment() {
                     }
 
                 }
-
-
             }
         })
     }
@@ -238,32 +235,14 @@ class LoginFrag : Fragment() {
                     db.collection("accounts").document(getCurrentUsernameString()).collection("played_data").document("generals").set(userPlayedData)
                 }
                 else{ //meaning it alr exists
-                    //so don't do anything
+                    //just set the first time log var to false
+                    firstTimeLog = false
                     Log.i(TAG, "User "+ "${getCurrentUsernameString()} with uid: " + getUserUid() + " already exists." )
                 }
         }
     }
 
-
-    private fun setSplashy(){
-        Splashy(activity!!)
-            .setLogo(R.drawable.blue_thunder)
-            .setTitle("")//.setTitleColor(R.color.colorPrimaryDark)
-            .setSubTitle("Loading your data...!").setSubTitleColor(R.color.colorPrimaryDark)
-            //.showProgress(true).setProgressColor(R.color.colorPrimary)
-            .setBackgroundResource(R.color.usuallyblack)
-            .setAnimation(Splashy.Animation.GLOW_LOGO, 1500)
-            //.setAnimation(Splashy.Animation.SLIDE_IN_LEFT_RIGHT, 1500)
-            .setFullScreen(true)
-            .setTime(4000)
-            .show()
-    }
-
     private fun goToGameHome() { // silly fun just for not having all this line all over the page
-        //call splashy (library splash screen), but only if they are logged, just in case; in a coroutine so everything goes on
-
-        if(isUserLogged())
-            setSplashy()
         this.findNavController().navigate(LoginFragDirections.actionLoginFragToGameHomeFrag(firstTimeLog))
     }
 

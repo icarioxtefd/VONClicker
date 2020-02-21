@@ -45,7 +45,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:fontFamily="monospace"
-            android:text="Currency: 0"
+            android:text="@{`Currency: ` + viewModel.currency.toString()}"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"

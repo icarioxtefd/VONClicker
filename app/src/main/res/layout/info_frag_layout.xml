@@ -3,9 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <variable
-            name="viewModelFromGH"
-            type="org.vono.luisdtefd.vonclicker.gameMain.GameHomeViewModel" />
     </data>
 
 
@@ -27,40 +24,35 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
-                        android:text="@{`Currency: ` + viewModelFromGH.currency.toString()}" />
+                        android:layout_marginTop="16dp"/>
 
                     <TextView
                         android:id="@+id/textViewTimesTapped"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
-                        android:text="@{`Total taps: ` + viewModelFromGH.timesTapped.toString()}" />
+                        android:layout_marginTop="16dp"/>
 
                     <TextView
                         android:id="@+id/textViewTimesSavedByApp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
-                        android:text="@{`Times the app saved your data: ` + viewModelFromGH.timesSavedByApp.toString()}" />
+                        android:layout_marginTop="16dp"/>
 
                     <TextView
                         android:id="@+id/textViewTimesSavedManually"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
-                        android:text="@{`Times you saved manually: ` + viewModelFromGH.timesSavedManually.toString()}" />
+                        android:layout_marginTop="16dp"/>
 
                     <TextView
                         android:id="@+id/textViewTapMultiplier"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
-                        android:text="@{`Current tap multiplier: ` + viewModelFromGH.tapMultiplier.toString()}" />
+                        android:layout_marginTop="16dp"/>
 
 
                 </LinearLayout>

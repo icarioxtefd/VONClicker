@@ -3,15 +3,17 @@ package org.vono.luisdtefd.vonclicker.gameMain
 import android.graphics.Rect
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import com.firebase.ui.auth.AuthUI
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
@@ -19,16 +21,16 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 
 import org.vono.luisdtefd.vonclicker.databinding.GameHomeFragmentBinding
-import org.vono.luisdtefd.vonclicker.R
 import com.nightonke.boommenu.BoomButtons.TextInsideCircleButton
+import com.rbddevs.splashy.Splashy
 
 import org.vono.luisdtefd.vonclicker.MainActivity
 import org.vono.luisdtefd.vonclicker.login.getCurrentUsernameString
 import org.vono.luisdtefd.vonclicker.login.getUserUid
 
 import java.util.HashMap
-
-
+import com.skydoves.elasticviews.ElasticAnimation
+import org.vono.luisdtefd.vonclicker.R
 
 
 class GameHomeFrag : Fragment() {
@@ -37,8 +39,10 @@ class GameHomeFrag : Fragment() {
         fun newInstance() = GameHomeFrag()
     }
 
+    //lateinit
     private lateinit var viewModel: GameHomeViewModel
     private lateinit var binding: GameHomeFragmentBinding
+    private lateinit var navController: NavController
 
     //ref the CF database and the accounts doc--------
     private val db = FirebaseFirestore.getInstance()
@@ -48,50 +52,72 @@ class GameHomeFrag : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        //get the safe arg from loginfrag and make a val with it
+        val args = GameHomeFragArgs.fromBundle(arguments!!)
+        val firstTimeLog = args.firstTimeLog
+
+        //call splashy (library splash screen), but only if they are logged, just in case
+        if(isUserLogged())
+            setSplashy()
+
+        //get the ref of the navController
+        navController = this.findNavController()
+
+        //ref the binding
+        binding = DataBindingUtil.inflate(inflater, R.layout.game_home_fragment, container, false)
+
+        //set LCO
+        binding.lifecycleOwner = this
+
+        //set the viewModel and everything
+        viewModel = ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
+
+        //change the behavior of onBackPressed
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { navController.popBackStack(R.id.mainFrag, false) }
 
         //get & enable the drawer
         var drawer = activity!!.findViewById<DrawerLayout>(R.id.drawer_layout)
         drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
 
-        //ref the binding
-        binding = DataBindingUtil.inflate(inflater, R.layout.game_home_fragment, container, false)
-
-
-        //set LCO
-        binding.lifecycleOwner = this
-
-
-        //set the viewModel and everything
-        viewModel = ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
-
 
         //check whether you got here as a guest or as an alr registered user.
         if (FirebaseAuth.getInstance().currentUser != null) { //if there's a user, gotta pull all their saved data, and make few changes
-            val args = GameHomeFragArgs.fromBundle(arguments!!)
-            if (args.firstTimeLog) {
+            if (! firstTimeLog) {
                 Log.i("GameHomeFrag", "Trying to fetch data from FBCF...")
                 loadDataFromFB()
             }
-            else
+            else {
+                Log.i("GameHomeFrag", "First Time logged in value: $firstTimeLog")
                 Log.i("GameHomeFrag", "Bro it's their first time, I'm not loading 0s")
-        } else
-        //user is a guest, so don't do anything, just create a new game without loading anything
-
+            }
+        }//else; user is a guest, so don't do anything, just create a new game without loading anything
 
 
         //set the listener to the image
-        binding.imageToTap.setOnClickListener {
-            // Toast.makeText(context, "Tap", Toast.LENGTH_SHORT).show()
+        binding.imageToTap.setOnClickListener() {
+            ElasticAnimation.Builder().setView(binding.imageToTap).setScaleX(0.85f).setScaleY(0.85f).setDuration(100)
+                .setOnFinishListener {
+                    // Do something after duration time
+                }.doAction()
+
             viewModel.i_timesTapped.value = viewModel.timesTapped.value!! + 1
-            viewModel.i_currency.value = viewModel.currency.value!! + 1
+
+            if (viewModel.upgrades.value!!["electrify"]!!["level"].toString() == "0")
+                viewModel.i_currency.value = viewModel.currency.value!! + 1
+            else {
+                if (viewModel.upgrades.value!!["electrify"]!!["level"].toString() == "1")
+                    viewModel.i_currency.value = viewModel.currency.value!! + 3
+                else {
+                    if (viewModel.upgrades.value!!["electrify"]!!["level"].toString() == "2")
+                        viewModel.i_currency.value = viewModel.currency.value!! + 6
+                }
+            }
             //Toast.makeText(context, "Tapped, tapped times total: " + viewModel.i_timesTapped.value, Toast.LENGTH_SHORT).show()
         }
 
         //observer for the viewText
-        viewModel.currency.observe(this, Observer {
-            it?.let {
-                binding.textViewCurrency.text = "Currency: " + viewModel.currency.value.toString()
-            }
+        viewModel.currency.observe(this.viewLifecycleOwner, Observer {// this.viewLifecycleOwner?? <- weird
+            binding.textViewCurrency.text = "Currency: ${viewModel.currency.value.toString()}"
         })
 
 
@@ -99,7 +125,50 @@ class GameHomeFrag : Fragment() {
         (activity as MainActivity).navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_electrify -> {
+                   //create the necessary map and check which values you have to change, then replace the liveData var
+                    val activatedElectrifyMap = HashMap<String, Any>()
 
+                    if (viewModel.i_upgrades.value!!["electrify"]!!["bought"] == false){
+                        if (viewModel.currency.value!! >= 50){
+                            activatedElectrifyMap["bought"] = true
+                            activatedElectrifyMap["level"] = 1
+
+                            viewModel.i_currency.value = viewModel.currency.value!! - 50
+                        }
+                        else{ //NEM to buy
+                            activatedElectrifyMap["bought"] = false
+                            activatedElectrifyMap["level"] = 0
+                        }
+                    }
+                    else{
+                        if (viewModel.currency.value!! >= 100) {
+                            if (viewModel.i_upgrades.value!!["electrify"]!!["level"].toString() == "1"){
+                                activatedElectrifyMap["bought"] = true
+                                activatedElectrifyMap["level"] = 2
+
+                                viewModel.i_currency.value = viewModel.currency.value!! - 100
+                            }
+                            else{ //max level atm 2; so you'd still be 2
+                                activatedElectrifyMap["bought"] = true
+                                activatedElectrifyMap["level"] = 2
+                            }
+                        }
+                        else{ //NEM to buy
+                            if (viewModel.i_upgrades.value!!["electrify"]!!["level"].toString() == "2"){
+                                activatedElectrifyMap["bought"] = true
+                                activatedElectrifyMap["level"] = 2
+                            }
+                            else{
+                                activatedElectrifyMap["bought"] = true
+                                activatedElectrifyMap["level"] = 1
+                            }
+                        }
+                    }
+
+                    //Note: .replace needs min API SDK 24
+                    viewModel.i_upgrades.value!!.replace("electrify", activatedElectrifyMap)
+
+                    Toast.makeText(context, "Electrify tapped, now: " +viewModel.i_upgrades.value!!.get("electrify"), Toast.LENGTH_SHORT).show()
                 }
                 R.id.menu_directCurrent -> {
 
@@ -154,7 +223,7 @@ class GameHomeFrag : Fragment() {
                             // When the boom-button corresponding this builder is clicked.
 
                             //go to the info frag
-                            this.findNavController().navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag())
+                            navController.navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag())
                             print("Clicked $index button")
                         }
                 }
@@ -176,11 +245,15 @@ class GameHomeFrag : Fragment() {
 
                             //logs out; if -> just in case
                             if(viewModel.logOutExitString.value == "Log Out"){
-                                //AuthUI.getInstance().signOut(requireContext())
-                                FirebaseAuth.getInstance().signOut()
+
+                                viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
+                                saveDataToFB() //save, in case they forgot to save by themselves
+
+                                AuthUI.getInstance().signOut(requireContext()) //logs out the user
+                                //FirebaseAuth.getInstance().signOut()
                             }
                             //and then gets to the main frag again
-                            this.findNavController().popBackStack()
+                            requireActivity().onBackPressed()
                         }
                 }
 
@@ -282,37 +355,33 @@ class GameHomeFrag : Fragment() {
                     }
                 }
             }
-
-
-
-//            .get().addOnSuccessListener { documentSnapshot ->
-//            val timesTapped = documentSnapshot.getLong("timesTapped") //firestore doesn't have getInt() so well, let's hope this will do
-//            val tapMultiplier = documentSnapshot.getLong("tapMultiplier")
-//            val currency = documentSnapshot.getLong("currency")
-//            val timesSavedManually = documentSnapshot.getLong("timesSavedManually")
-//            val timesSavedByApp = documentSnapshot.getLong("timesSavedByApp")
-//            val upgrades = documentSnapshot.get("upgrades") as? HashMap<String, HashMap<String, Any>>
-//
-//            viewModel.i_timesTapped.value = timesTapped!!.toInt()
-//            viewModel.i_tapMultiplier.value = tapMultiplier!!.toInt()
-//            viewModel.i_currency.value = currency!!.toInt()
-//            viewModel.i_timesSavedManually.value = timesSavedManually!!.toInt()
-//            viewModel.i_timesSavedByApp.value = timesSavedByApp!!.toInt()
-//            viewModel.i_upgrades.value = upgrades
-
         }
     }
 
-    //--------------overrides
+    private fun setSplashy(){
+        Splashy(activity!!)
+            .setLogo(R.drawable.blue_thunder)
+            .setTitle("")//.setTitleColor(R.color.colorPrimaryDark)
+            .setSubTitle("Loading your data...!").setSubTitleColor(R.color.colorPrimaryDark)
+            //.showProgress(true).setProgressColor(R.color.colorPrimary)
+            .setBackgroundResource(R.color.usuallyblack)
+            .setAnimation(Splashy.Animation.GLOW_LOGO, 1500)
+            //.setAnimation(Splashy.Animation.SLIDE_IN_LEFT_RIGHT, 1500)
+            .setFullScreen(true)
+            .setTime(3000)
+            .show()
+    }
 
+
+    //--------------overrides
 
     override fun onDestroy() {
         super.onDestroy()
 
-        if(isUserLogged()) { //only if user logged
-            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
-            saveDataToFB() //save on destroy, so if they exit, at least you save their things before this happening. TODO if you kill the app by "swiping" it doesn't seem to work.
-        }
+//        if(isUserLogged()) { //only if user logged
+//            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
+//            saveDataToFB() //save on destroy, so if they exit, at least you save their things before this happening. TODO if you kill the app by "swiping" it doesn't seem to work.
+//        }
 
     }
 

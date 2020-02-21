@@ -13,7 +13,7 @@ android {
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "org.vono.luisdtefd.vonclicker"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -73,6 +73,7 @@ dependencies {
     implementation 'tyrantgit:explosionfield:1.0.1'
     implementation 'com.nightonke:boommenu:2.1.1'
     implementation 'com.rbddevs.splashy:splashy:1.1.0'
+    implementation 'com.github.skydoves:elasticviews:1.1.2'
 }
 
 

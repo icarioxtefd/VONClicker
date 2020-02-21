@@ -1,16 +1,12 @@
 package org.vono.luisdtefd.vonclicker.login
 
-import android.content.Context
-import android.preference.PreferenceManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import org.vono.luisdtefd.vonclicker.R
-import kotlin.random.Random
 
 class LoginViewModel : ViewModel() {
 
     enum class AuthenticationState {
-        AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION
+        AUTHENTICATED, UNAUTHENTICATED
     }
 
     //  authenticationState variable based off the FirebaseUserLiveData object. By

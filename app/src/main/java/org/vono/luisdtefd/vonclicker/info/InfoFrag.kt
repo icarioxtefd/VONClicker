@@ -6,8 +6,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import org.vono.luisdtefd.vonclicker.R
 import org.vono.luisdtefd.vonclicker.databinding.InfoFragLayoutBinding
@@ -21,12 +23,16 @@ class InfoFrag : Fragment() {
         fun newInstance() = InfoFrag()
     }
 
+    //lateinit
     private lateinit var binding: InfoFragLayoutBinding
+    private lateinit var navController: NavController
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        //ref the navController
+        navController = this.findNavController()
 
         //get & disable the drawer
         var drawer = activity!!.findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -39,21 +45,12 @@ class InfoFrag : Fragment() {
         //set LCO
         binding.lifecycleOwner = this
 
+        //get the parcelable from GHF and add the values to the textViews
 
-        //set the viewModel and everything
-        val viewModel = activity?.run {
-            ViewModelProviders.of(this).get(GameHomeViewModel::class.java)
-        }
 
-        //ref the binding's var
-        binding.viewModelFromGH = viewModel
-
+        //change the behaviour when user presses back button
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { navController.popBackStack(R.id.gameHomeFrag, false) }
 
         return binding.root
     }
-
-//    override fun onActivityCreated(savedInstanceState: Bundle?) {
-//
-//    }
-
 }
