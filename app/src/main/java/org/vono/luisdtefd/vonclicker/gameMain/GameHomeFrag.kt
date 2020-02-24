@@ -32,6 +32,8 @@ import java.util.HashMap
 import com.skydoves.elasticviews.ElasticAnimation
 import android.os.Handler
 import android.os.SystemClock.sleep
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.game_home_fragment.*
 import kotlinx.coroutines.*
 import org.vono.luisdtefd.vonclicker.R
@@ -96,17 +98,33 @@ class GameHomeFrag : Fragment() {
             }
         }//else; user is a guest, so don't do anything, just create a new game without loading anything
 
+//        //set the gif for the imageView with glide todo crashes when you back to mainFrag
+//        Glide.with(this)
+//            .load(R.drawable.slimy)
+//            .apply(RequestOptions().override(400, 420))
+//            .into(binding.imageToTap)
 
         //set the listener to the image
         binding.imageToTap.setOnClickListener() {
+            binding.imageToTap.setImageResource(R.drawable.slimy_hit)
             ElasticAnimation.Builder().setView(binding.imageToTap).setScaleX(0.85f).setScaleY(0.85f).setDuration(100)
                 .setOnFinishListener {
                     // Do something after duration time
+                    //put the pic back again
+                    binding.imageToTap.setImageResource(R.drawable.slimy)
                 }.doAction()
 
             viewModel.i_timesTapped.value = viewModel.timesTapped.value!! + 1
             viewModel.i_currency.value = viewModel.currency.value!! + viewModel.tapMultiplier.value!!
             //Toast.makeText(context, "Tapped, tapped times total: " + viewModel.i_timesTapped.value, Toast.LENGTH_SHORT).show()
+
+            if (viewModel.currency.value!! >= 50) //tell the player (if they didn't find out yet) that there's a drawer on the right
+                binding.fabOpenDrawer.show()
+        }
+
+        //make the listener for the fab that opens the drawer
+        binding.fabOpenDrawer.setOnClickListener {
+            drawer.openDrawer(Gravity.RIGHT)
         }
 
         //observer for the viewText

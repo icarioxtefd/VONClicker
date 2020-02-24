@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list android:id="@+id/bg_anim"
+    android:oneshot="false"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/bg_frame1" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame2" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame3" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame4" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame5" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame6" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame7" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame8" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame9" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame10" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame11" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame12" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame13" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame14" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame15" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame16" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame18" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame19" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame20" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame21" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame22" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame23" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame24" android:duration="100" />
+    <item android:drawable="@drawable/bg_frame25" android:duration="100" />
+</animation-list>
