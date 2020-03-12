@@ -81,7 +81,7 @@ class LoginFrag : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         //disable the drawer, since here it's not its place
-        activity!!.findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+        requireActivity().findViewById<DrawerLayout>(R.id.drawer_layout).setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
 
         alertDialog = activity.let {

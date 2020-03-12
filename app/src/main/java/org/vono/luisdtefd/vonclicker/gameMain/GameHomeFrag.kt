@@ -32,6 +32,7 @@ import java.util.HashMap
 import com.skydoves.elasticviews.ElasticAnimation
 import android.os.Handler
 import android.os.SystemClock.sleep
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.game_home_fragment.*
@@ -59,11 +60,12 @@ class GameHomeFrag : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         //get the safe arg from loginfrag and make a val with it
-        val args = GameHomeFragArgs.fromBundle(arguments!!)
+        val args = GameHomeFragArgs.fromBundle(requireArguments())
         val firstTimeLog = args.firstTimeLog
 
+
         //call splashy (library splash screen), but only if they are logged, just in case
-        if(isUserLogged())
+        if(isUserLogged()) //todo arreglar el que sólo salga en la carga, vaya, porque la volver de info frag tb lo hace...
             setSplashy()
 
         //get the ref of the navController
@@ -82,7 +84,7 @@ class GameHomeFrag : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { navController.popBackStack(R.id.mainFrag, false) }
 
         //get & enable the drawer
-        var drawer = activity!!.findViewById<DrawerLayout>(R.id.drawer_layout)
+        var drawer = requireActivity().findViewById<DrawerLayout>(R.id.drawer_layout)
         drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
 
 
@@ -97,12 +99,6 @@ class GameHomeFrag : Fragment() {
                 Log.i("GameHomeFrag", "Bro it's their first time, I'm not loading 0s")
             }
         }//else; user is a guest, so don't do anything, just create a new game without loading anything
-
-//        //set the gif for the imageView with glide todo crashes when you back to mainFrag
-//        Glide.with(this)
-//            .load(R.drawable.slimy)
-//            .apply(RequestOptions().override(400, 420))
-//            .into(binding.imageToTap)
 
         //set the listener to the image
         binding.imageToTap.setOnClickListener() {
@@ -146,10 +142,12 @@ class GameHomeFrag : Fragment() {
             //observer of directCurrent upgrade
             if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == true){
 
-                var jjob: Job? = null
+                var idleJob: Job? = null
                 when (viewModel.upgrades.value!!["directCurrent"]!!["level"].toString()){
                     "1" -> {
-                        jjob = GlobalScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+                        idleJob?.cancel() //cancels the said when upgrading and cancels this when (todo happens again after coming back from infoFrag) and It's a bug, it doesn't seem to work at all.
+                        Log.i("GameHomeFrag", "job stopped as expected? -> " + idleJob?.isActive)
+                        idleJob = lifecycleScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
                             while (true) {
                                 sleep(5000)
                                 withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
@@ -159,8 +157,9 @@ class GameHomeFrag : Fragment() {
                         }
                     }
                     "2" -> {
-                        jjob?.cancel() //cancels the said when upgrading and cancels this when (todo happens again after coming back from infoFrag) and It's a bug, it doesn't seem to work at all.
-                        jjob = GlobalScope.launch(Dispatchers.Default){ // same as above
+                        idleJob?.cancel() //cancels the said when upgrading and cancels this when (todo happens again after coming back from infoFrag) and It's a bug, it doesn't seem to work at all.
+                        Log.i("GameHomeFrag", "job stopped as expected? -> " + idleJob?.isActive)
+                        idleJob = lifecycleScope.launch(Dispatchers.Default){ // same as above
                             while (true) {
                                 sleep(2500)
                                 withContext(Dispatchers.Main){ // same as above
@@ -320,9 +319,6 @@ class GameHomeFrag : Fragment() {
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
 
-                            //save before going to info frag, since it'll load again because the fragment gets destroyed when navigating and created back when returning (this is one todo)
-                            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
-                            saveDataToFB()
                             //go to the info frag, passing the args as safe args (order comes from the navigation's TEXT, NOT in design
                             navController.navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag(
                                 viewModel.timesTapped.value!!,
@@ -471,7 +467,7 @@ class GameHomeFrag : Fragment() {
     }
 
     private fun setSplashy(){
-        Splashy(activity!!)
+        Splashy(requireActivity())
             .setLogo(R.drawable.blue_thunder)
             .setTitle("")//.setTitleColor(R.color.colorPrimaryDark)
             .setSubTitle("Loading your data...!").setSubTitleColor(R.color.colorPrimaryDark)
@@ -491,8 +487,8 @@ class GameHomeFrag : Fragment() {
         super.onDestroy()
 
 //        if(isUserLogged()) { //only if user logged
-//            viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
 //            saveDataToFB() //save on destroy, so if they exit, at least you save their things before this happening. TODO if you kill the app by "swiping" it doesn't seem to work.
+              viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
 //        }
 
     }

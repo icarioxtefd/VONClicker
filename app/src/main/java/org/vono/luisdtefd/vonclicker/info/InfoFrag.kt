@@ -32,13 +32,13 @@ class InfoFrag : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         //get the data fromthe safeargs passed from the GHF
-        val args = InfoFragArgs.fromBundle(arguments!!)
+        val args = InfoFragArgs.fromBundle(requireArguments())
 
         //ref the navController
         navController = this.findNavController()
 
         //get & disable the drawer
-        var drawer = activity!!.findViewById<DrawerLayout>(R.id.drawer_layout)
+        var drawer = requireActivity().findViewById<DrawerLayout>(R.id.drawer_layout)
         drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
 
