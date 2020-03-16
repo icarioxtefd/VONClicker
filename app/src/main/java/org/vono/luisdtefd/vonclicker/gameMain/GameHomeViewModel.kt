@@ -50,14 +50,14 @@ class GameHomeViewModel : ViewModel() {
 
 
     private fun initializeUpgradesMap() {
-        var upgradesMap = HashMap<String, java.util.HashMap<String, Any>>()
+        val upgradesMap = HashMap<String, java.util.HashMap<String, Any>>()
 
         //every upgrade as a map
-        var electrifyMap = HashMap<String, Any>()
+        val electrifyMap = HashMap<String, Any>()
         electrifyMap["bought"] = false
         electrifyMap["level"] = 0
 
-        var directCurrentMap = HashMap<String, Any>()
+        val directCurrentMap = HashMap<String, Any>()
         directCurrentMap["bought"] = false
         directCurrentMap["level"] = 0
 

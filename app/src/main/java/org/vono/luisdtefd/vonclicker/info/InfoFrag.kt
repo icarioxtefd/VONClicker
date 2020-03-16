@@ -1,6 +1,6 @@
 package org.vono.luisdtefd.vonclicker.info
 
-import androidx.lifecycle.ViewModelProviders
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -14,9 +14,6 @@ import androidx.navigation.fragment.findNavController
 import org.vono.luisdtefd.vonclicker.R
 import org.vono.luisdtefd.vonclicker.databinding.InfoFragLayoutBinding
 
-import org.vono.luisdtefd.vonclicker.gameMain.GameHomeViewModel
-
-
 class InfoFrag : Fragment() {
 
     companion object {
@@ -27,11 +24,12 @@ class InfoFrag : Fragment() {
     private lateinit var binding: InfoFragLayoutBinding
     private lateinit var navController: NavController
 
+    @SuppressLint("SetTextI18n") //pls let me concatenate strings with values thank you
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //get the data fromthe safeargs passed from the GHF
+        //get the data from the safeargs passed from the GHF
         val args = InfoFragArgs.fromBundle(requireArguments())
 
         //ref the navController

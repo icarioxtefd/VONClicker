@@ -1,7 +1,7 @@
 package org.vono.luisdtefd.vonclicker.gameMain
 
+import android.annotation.SuppressLint
 import android.graphics.Rect
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -30,12 +30,9 @@ import org.vono.luisdtefd.vonclicker.login.getUserUid
 
 import java.util.HashMap
 import com.skydoves.elasticviews.ElasticAnimation
-import android.os.Handler
 import android.os.SystemClock.sleep
+import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import kotlinx.android.synthetic.main.game_home_fragment.*
 import kotlinx.coroutines.*
 import org.vono.luisdtefd.vonclicker.R
 
@@ -55,6 +52,10 @@ class GameHomeFrag : Fragment() {
     private val db = FirebaseFirestore.getInstance()
     lateinit var collRef: CollectionReference
 
+    //coroutines vars
+    var idleJob: Job? = null
+
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -129,7 +130,7 @@ class GameHomeFrag : Fragment() {
         })
 
         //observer for the electrify updates -> tappingMultiplier, depending on the level of the electrify upgrade
-        viewModel.upgrades.observe(this, Observer {
+        viewModel.upgrades.observe(this.viewLifecycleOwner, Observer {
 
             //observer of electrify upgrade
             when (viewModel.upgrades.value!!["electrify"]!!["level"].toString()){
@@ -141,13 +142,13 @@ class GameHomeFrag : Fragment() {
 
             //observer of directCurrent upgrade
             if (viewModel.upgrades.value!!["directCurrent"]!!["bought"] == true){
-
-                var idleJob: Job? = null
                 when (viewModel.upgrades.value!!["directCurrent"]!!["level"].toString()){
                     "1" -> {
-                        idleJob?.cancel() //cancels the said when upgrading and cancels this when (todo happens again after coming back from infoFrag) and It's a bug, it doesn't seem to work at all.
-                        Log.i("GameHomeFrag", "job stopped as expected? -> " + idleJob?.isActive)
-                        idleJob = lifecycleScope.launch(Dispatchers.Default){ // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+                        cancelExistingIdleJob()
+
+                        val coroutineScope = CoroutineScope(Dispatchers.Default) // launch outside (Default) the while with the sleep, so it doesn't freeze the actual screen
+                        idleJob = coroutineScope.launch(Dispatchers.Default){
+                            Log.i("GameHomeFrag", "started job 'DC Lvl1' correctly? -> " + idleJob?.isActive)
                             while (true) {
                                 sleep(5000)
                                 withContext(Dispatchers.Main){ // and perform the click then in the actual screen (Main)
@@ -157,17 +158,20 @@ class GameHomeFrag : Fragment() {
                         }
                     }
                     "2" -> {
-                        idleJob?.cancel() //cancels the said when upgrading and cancels this when (todo happens again after coming back from infoFrag) and It's a bug, it doesn't seem to work at all.
-                        Log.i("GameHomeFrag", "job stopped as expected? -> " + idleJob?.isActive)
-                        idleJob = lifecycleScope.launch(Dispatchers.Default){ // same as above
+                        cancelExistingIdleJob()
+
+                        val coroutineScope = CoroutineScope(Dispatchers.Default) // same as above ("")
+                        idleJob = coroutineScope.launch(Dispatchers.Default){
+                            Log.i("GameHomeFrag", "started job 'DC Lvl2' correctly? -> " + idleJob?.isActive)
                             while (true) {
                                 sleep(2500)
-                                withContext(Dispatchers.Main){ // same as above
+                                withContext(Dispatchers.Main){ // ""
                                     binding.imageToTap.performClick()
                                 }
                             }
                         }
                     }
+
                 }
             }
 
@@ -319,7 +323,6 @@ class GameHomeFrag : Fragment() {
                         .listener { index ->
                             // When the boom-button corresponding this builder is clicked.
 
-                            //go to the info frag, passing the args as safe args (order comes from the navigation's TEXT, NOT in design
                             navController.navigate(GameHomeFragDirections.actionGameHomeFragToInfoFrag(
                                 viewModel.timesTapped.value!!,
                                 viewModel.timesSavedByApp.value!!,
@@ -486,11 +489,23 @@ class GameHomeFrag : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
 
+        Log.i("GameHomeFrag", "Destroyed")
+        cancelExistingIdleJob()
+
 //        if(isUserLogged()) { //only if user logged
 //            saveDataToFB() //save on destroy, so if they exit, at least you save their things before this happening. TODO if you kill the app by "swiping" it doesn't seem to work.
               viewModel.i_timesSavedByApp.value = viewModel.timesSavedByApp.value!! + 1
 //        }
+    }
 
+
+    //--------------class shortening functions
+
+    private fun cancelExistingIdleJob() {
+        if (idleJob != null) { // if there's a job,
+            idleJob?.cancel() // cancels the said when upgrading and cancels this when coming back from InfoFrag (because otherwise it would do another one, having multiple coroutines)
+            Log.i("GameHomeFrag", "last active idle job stopped as expected? -> " + idleJob?.isCancelled)
+        }
     }
 
 }
